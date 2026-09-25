@@ -295,6 +295,28 @@ table.tbl tr.sel td { background: rgba(243,179,61,.1); }
 </style>
 </head>
 <body>
+<script>
+(function(){
+  var unlockDate = new Date("2026-10-09T00:00:00+02:00");
+  if (new Date() < unlockDate) {
+    document.documentElement.innerHTML =
+      '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>Próximamente | Control Engineering for BME</title>' +
+      '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+      '<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">' +
+      '<style>*{box-sizing:border-box;margin:0}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d1626;color:#e7eaf0;font-family:"IBM Plex Sans",system-ui,sans-serif;text-align:center;padding:2rem}' +
+      '.box{max-width:520px}.kicker{color:#f3b33d;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600}' +
+      'h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.15;margin:.6rem 0 1rem}' +
+      'p{color:#97a4ba;line-height:1.55}a{color:#6cc4ff}</style></head>' +
+      '<body><div class="box"><p class="kicker">Control Engineering for BME</p>' +
+      '<h1>Tutorial 6 – Frequency response and Bode plots</h1>' +
+      '<p>Este tutorial todavía no está disponible.<br>Se habilita el <strong>viernes 9 de octubre de 2026</strong>.</p>' +
+      '<p style="margin-top:1.2rem"><a href="index.html">← Volver a la lista de tutoriales</a></p></div></body>';
+  }
+})();
+</script>
+
 <header class="masthead">
   <p class="course">Control Engineering for BME, tutorial 6 (week 7)</p>
   <h1><span class="tno">6</span>Frequency response and Bode plots</h1>

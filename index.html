@@ -22,6 +22,9 @@ a.card:hover,a.card:focus-visible{border-color:var(--amber);transform:translateX
 .num{font-family:Newsreader,Georgia,serif;font-size:1.8rem;color:var(--amber);min-width:2ch}
 .t{font-weight:500;font-size:1.05rem}
 .d{color:var(--graphite);font-size:.9rem}
+a.card.locked{opacity:.5;cursor:default;pointer-events:none}
+a.card.locked .num{color:var(--faint)}
+.lock-badge{display:inline-block;margin-top:.3rem;font-size:.78rem;color:var(--amber);background:rgba(243,179,61,.1);border:1px solid rgba(243,179,61,.3);padding:.1rem .55rem;border-radius:999px}
 footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);color:var(--faint);font-size:.85rem}
 </style>
 </head>
@@ -35,10 +38,26 @@ footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);color
     <li><a class="card" href="tutorial2_response_and_stability.html"><span class="num">2</span><span><span class="t">Poles, second-order response and stability</span><br><span class="d">Time response, damping and pole locations</span></span></a></li>
     <li><a class="card" href="tutorial3_block_diagrams.html"><span class="num">3</span><span><span class="t">Block diagrams</span><br><span class="d">Reduction rules and closed-loop transfer functions</span></span></a></li>
     <li><a class="card" href="tutorial4_root_locus.html"><span class="num">4</span><span><span class="t">Root locus</span><br><span class="d">How closed-loop poles move with gain</span></span></a></li>
-    <li><a class="card" href="tutorial5_steady_state_error_state_space.html"><span class="num">5</span><span><span class="t">Steady-state error and state space</span><br><span class="d">System type, error constants and state-space models</span></span></a></li>
-    <li><a class="card" href="tutorial6_frequency_response_bode.html"><span class="num">6</span><span><span class="t">Frequency response and Bode plots</span><br><span class="d">Magnitude, phase and stability margins</span></span></a></li>
+    <li><a class="card" id="card-t5" href="tutorial5_steady_state_error_state_space.html"><span class="num">5</span><span><span class="t">Steady-state error and state space</span><br><span class="d">System type, error constants and state-space models</span><br><span class="lock-badge" id="badge-t5" hidden>Disponible el 2 de octubre</span></span></a></li>
+    <li><a class="card" id="card-t6" href="tutorial6_frequency_response_bode.html"><span class="num">6</span><span><span class="t">Frequency response and Bode plots</span><br><span class="d">Magnitude, phase and stability margins</span><br><span class="lock-badge" id="badge-t6" hidden>Disponible el 9 de octubre</span></span></a></li>
   </ol>
   <footer>ENTEG · University of Groningen</footer>
 </main>
+<script>
+(function(){
+  var locks = [
+    { cardId: "card-t5", badgeId: "badge-t5", unlock: new Date("2026-10-02T00:00:00+02:00") },
+    { cardId: "card-t6", badgeId: "badge-t6", unlock: new Date("2026-10-09T00:00:00+02:00") }
+  ];
+  var now = new Date();
+  locks.forEach(function(l){
+    if (now < l.unlock) {
+      document.getElementById(l.cardId).classList.add("locked");
+      var badge = document.getElementById(l.badgeId);
+      badge.hidden = false;
+    }
+  });
+})();
+</script>
 </body>
 </html>
