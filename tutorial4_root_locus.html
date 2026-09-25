@@ -1,0 +1,1562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tutorial 4 – Root locus | Control Engineering for BME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] }, svg: { fontCache: "global" } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+/* ---------- Tokens: night-blueprint palette (always dark, as requested) ---------- */
+:root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+  --ink: #0d1626;          /* page */
+  --ink-2: #111d31;        /* sections */
+  --slab: #15233b;         /* raised surfaces, blocks */
+  --rule: #263857;         /* lines & borders */
+  --rule-2: #34507a;
+  --chalk: #e7eaf0;        /* primary text + diagram strokes */
+  --graphite: #97a4ba;     /* secondary text */
+  --faint: #5e6f8c;
+  --amber: #f3b33d;        /* the step being worked on */
+  --coral: #ff7a6b;        /* poles, instability */
+  --sky: #6cc4ff;          /* zeros, signals */
+  --mint: #7fe0b0;         /* stable */
+  --violet: #b9a2ff;
+  --grid: rgba(108, 150, 214, .07);
+  --grid-2: rgba(108, 150, 214, .13);
+  --serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--ink); color: var(--chalk);
+  font-family: var(--serif); font-size: 18px; line-height: 1.62;
+  font-optical-sizing: auto;
+}
+img, svg, canvas { max-width: 100%; }
+a { color: var(--sky); }
+::selection { background: rgba(243,179,61,.35); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* ---------- Header ---------- */
+.masthead { max-width: 1180px; margin: 0 auto; padding: 44px 24px 18px; }
+.masthead .course { font-family: var(--sans); font-size: 14px; color: var(--graphite); letter-spacing: .01em; margin: 0 0 6px; }
+.masthead h1 {
+  font-weight: 500; font-size: clamp(40px, 6.4vw, 76px); line-height: 1.02; margin: 0;
+  letter-spacing: -.015em;
+}
+.masthead h1 .tno { color: var(--faint); font-weight: 300; margin-right: .18em; }
+.masthead .lede { max-width: 68ch; color: var(--graphite); margin: 14px 0 0; font-size: 18px; }
+
+/* ---------- Tabs ---------- */
+.tabbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: rgba(13,22,38,.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.tabbar .inner { max-width: 1180px; margin: 0 auto; padding: 0 16px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tabbar .inner::-webkit-scrollbar { display: none; }
+.tab {
+  font-family: var(--sans); font-size: 14.5px; color: var(--graphite); background: none; border: 0;
+  padding: 14px 14px 12px; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.tab .n { font-family: var(--serif); font-size: 20px; color: var(--faint); font-variant-numeric: lining-nums; }
+.tab:hover { color: var(--chalk); }
+.tab[aria-selected="true"] { color: var(--chalk); border-bottom-color: var(--amber); }
+.tab[aria-selected="true"] .n { color: var(--amber); }
+
+/* ---------- Panels & sections ---------- */
+main { max-width: 1180px; margin: 0 auto; padding: 8px 24px 80px; }
+.panel { display: none; }
+.panel.active { display: block; }
+.sec { margin: 38px 0 0; }
+.sec > h2 { font-weight: 500; font-size: 30px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -.005em; }
+.sec > h3, .sub-h { font-family: var(--sans); font-weight: 600; font-size: 15px; color: var(--chalk); margin: 26px 0 8px; }
+.prose { max-width: 72ch; }
+.prose p { margin: 0 0 12px; }
+.muted { color: var(--graphite); }
+.small { font-size: 15px; }
+.src { font-family: var(--sans); font-size: 13.5px; color: var(--faint); }
+.problem { border-left: 3px solid var(--rule-2); padding: 4px 0 4px 20px; max-width: 76ch; }
+.problem p { margin: 0 0 8px; }
+
+/* ---------- Blueprint stage (diagram area) ---------- */
+.stage {
+  position: relative; border: 1px solid var(--rule); border-radius: 6px; padding: 18px 14px;
+  background-color: var(--ink-2);
+  background-image:
+    linear-gradient(var(--grid-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-2) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  overflow-x: auto;
+}
+.stage svg.bd { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 560px; }
+.stage .caption { font-family: var(--sans); font-size: 13px; color: var(--faint); margin-top: 8px; text-align: center; }
+
+/* Block-diagram drawing */
+svg.bd { font-family: var(--serif); }
+svg.bd .bd-block rect { fill: var(--slab); stroke: var(--chalk); stroke-width: 1.4; }
+svg.bd .bd-t { fill: var(--chalk); font-size: 17px; }
+svg.bd .bd-sig { fill: var(--sky); font-size: 16px; }
+svg.bd .bd-sign { fill: var(--chalk); font-size: 16px; font-family: var(--sans); }
+svg.bd .bd-wire { fill: none; stroke: var(--chalk); stroke-width: 1.5; stroke-linejoin: round; }
+svg.bd .bd-head { fill: var(--chalk); }
+svg.bd .bd-sum circle { fill: var(--slab); stroke: var(--chalk); stroke-width: 1.4; }
+svg.bd .bd-sum line { stroke: var(--chalk); stroke-width: 1.1; }
+svg.bd .bd-dot { fill: var(--chalk); }
+svg.bd .bd-frac { stroke: var(--chalk); stroke-width: 1.1; }
+svg.bd .hl-a rect, svg.bd .hl-a circle { stroke: var(--amber); fill: rgba(243,179,61,.12); stroke-width: 2; }
+svg.bd .hl-a .bd-t, svg.bd text.hl-a { fill: #ffd68a; }
+svg.bd .hl-a .bd-frac, svg.bd .hl-a line, svg.bd .bd-wire.hl-a { stroke: var(--amber); }
+svg.bd .bd-wire.hl-a { stroke-width: 2.2; }
+svg.bd .bd-head.hl-a, svg.bd .bd-dot.hl-a { fill: var(--amber); }
+svg.bd .hl-b rect, svg.bd .hl-b circle { stroke: var(--sky); fill: rgba(108,196,255,.12); stroke-width: 2; }
+svg.bd .hl-b .bd-t { fill: #bfe5ff; }
+svg.bd .hl-b .bd-frac, svg.bd .hl-b line, svg.bd .bd-wire.hl-b { stroke: var(--sky); }
+svg.bd .bd-wire.hl-b { stroke-width: 2.2; }
+svg.bd .bd-head.hl-b, svg.bd .bd-dot.hl-b { fill: var(--sky); }
+svg.bd .dim { opacity: .28; }
+svg.bd .tag-on rect, svg.bd .tag-on circle { stroke: var(--amber) !important; stroke-width: 2.2; fill: rgba(243,179,61,.14); }
+svg.bd .bd-wire.tag-on { stroke: var(--amber) !important; stroke-width: 2.6; }
+svg.bd .bd-head.tag-on, svg.bd .bd-dot.tag-on { fill: var(--amber) !important; }
+svg.bd.tagging > g:not(.tag-on), svg.bd.tagging > polyline:not(.tag-on), svg.bd.tagging > polygon:not(.tag-on), svg.bd.tagging > circle:not(.tag-on) { opacity: .3; }
+svg.bd .note { fill: var(--graphite); font-family: var(--sans); font-size: 12px; }
+#l2sl { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+#l2sl label.rng { margin-top: 6px; }
+
+/* ---------- Stepper ---------- */
+.stepper { margin-top: 6px; }
+.steps-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; counter-reset: st; }
+.pill {
+  font-family: var(--sans); font-size: 13.5px; border: 1px solid var(--rule); background: transparent; color: var(--graphite);
+  padding: 6px 11px 6px 8px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+}
+.pill .k { display: inline-grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: var(--slab); color: var(--chalk); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pill.done { color: var(--chalk); border-color: var(--rule-2); }
+.pill.done .k { background: var(--rule-2); }
+.pill.on { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+.pill.on .k { background: rgba(13,22,38,.18); color: var(--ink); }
+.step-vis { margin-bottom: 16px; }
+.step-vis > .vis { display: none; }
+.step-vis > .vis.on { display: block; }
+.step-body > .step { display: none; }
+.step-body > .step.on { display: block; animation: fadein .25s ease; }
+.stepper.all .step-body > .step { display: block; border-top: 1px dashed var(--rule); padding-top: 14px; margin-top: 14px; }
+.step h4 { font-weight: 500; font-size: 23px; margin: 0 0 8px; }
+.step h4 .sn { color: var(--amber); margin-right: 8px; }
+.step p, .step li { max-width: 74ch; }
+.step ul, .step ol { padding-left: 1.2em; }
+.step-ctl { display: flex; gap: 8px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+@keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .step-body > .step.on { animation: none; } }
+
+/* ---------- Controls ---------- */
+.btn {
+  font-family: var(--sans); font-size: 14px; color: var(--chalk); background: var(--slab); border: 1px solid var(--rule-2);
+  padding: 7px 14px; border-radius: 4px; cursor: pointer;
+}
+.btn:hover { border-color: var(--graphite); }
+.btn.primary { background: var(--amber); color: var(--ink); border-color: var(--amber); font-weight: 600; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .4; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 4px; overflow: hidden; }
+.seg button { font-family: var(--sans); font-size: 14px; background: transparent; color: var(--graphite); border: 0; border-right: 1px solid var(--rule-2); padding: 7px 13px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--rule-2); color: var(--chalk); }
+.chk { font-family: var(--sans); font-size: 13.5px; color: var(--graphite); display: inline-flex; gap: 6px; align-items: center; margin-right: 14px; cursor: pointer; }
+.chk input { accent-color: var(--amber); }
+.sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; }
+label.rng { display: block; font-family: var(--sans); font-size: 14px; color: var(--graphite); margin: 10px 0 4px; }
+label.rng b { color: var(--chalk); font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--amber); }
+input[type=number] { font-family: var(--sans); font-size: 14px; width: 92px; background: var(--ink); color: var(--chalk); border: 1px solid var(--rule-2); border-radius: 4px; padding: 5px 7px; }
+
+/* ---------- Lab layout ---------- */
+.lab { display: grid; grid-template-columns: minmax(250px, 320px) 1fr; gap: 22px; align-items: start; }
+.lab .ctrls { font-family: var(--sans); }
+.lab .plots { display: grid; gap: 14px; min-width: 0; }
+.lab .plots.two { grid-template-columns: 1fr 1fr; }
+.plotbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--ink-2); padding: 8px; min-width: 0; }
+.plotbox .pt { font-family: var(--sans); font-size: 13px; color: var(--graphite); margin: 2px 4px 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.plotbox canvas { display: block; width: 100%; height: 300px; touch-action: none; }
+.plotbox canvas.tall { height: 420px; }
+.plotbox canvas.short { height: 230px; }
+.readout { font-family: var(--sans); font-size: 14px; border-top: 1px solid var(--rule); margin-top: 14px; padding-top: 10px; }
+.readout table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.readout td { padding: 3px 0; vertical-align: top; }
+.readout td:first-child { color: var(--graphite); padding-right: 10px; }
+.readout td:last-child { text-align: right; color: var(--chalk); }
+.badge { display: inline-block; font-family: var(--sans); font-size: 12.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+.badge.ok { background: rgba(127,224,176,.14); color: var(--mint); }
+.badge.bad { background: rgba(255,122,107,.15); color: var(--coral); }
+.badge.mid { background: rgba(243,179,61,.14); color: var(--amber); }
+.legend { font-family: var(--sans); font-size: 12.5px; color: var(--graphite); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Result & notes ---------- */
+.result { border: 1px solid var(--amber); border-radius: 6px; padding: 14px 20px; background: rgba(243,179,61,.05); max-width: 860px; overflow-x: auto; }
+.result .rt { font-family: var(--sans); font-size: 13.5px; color: var(--amber); margin-bottom: 2px; }
+.erratum { border-left: 3px solid var(--coral); padding: 6px 0 6px 18px; max-width: 80ch; }
+.erratum .rt { font-family: var(--sans); font-size: 14px; color: var(--coral); font-weight: 600; margin-bottom: 4px; }
+.erratum p { margin: 0 0 8px; }
+.insight { border-left: 3px solid var(--sky); padding: 4px 0 4px 18px; max-width: 78ch; margin: 14px 0; }
+.insight .rt { font-family: var(--sans); font-size: 14px; color: var(--sky); font-weight: 600; }
+.eq { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+mjx-container[display="true"] { margin: .7em 0 !important; }
+mjx-container { max-width: 100%; }
+
+/* Tool cards (canonical forms) */
+.forms { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 390px)); gap: 12px; }
+.form { border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px 12px; background: var(--ink-2); }
+.form .ft { font-family: var(--sans); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.form svg.bd { width: 100%; height: auto; }
+.form .eq { font-size: 16px; }
+
+/* Tables */
+table.tbl { border-collapse: collapse; font-family: var(--sans); font-size: 14px; font-variant-numeric: tabular-nums; }
+table.tbl th, table.tbl td { border-bottom: 1px solid var(--rule); padding: 6px 12px; text-align: left; }
+table.tbl th { color: var(--graphite); font-weight: 500; }
+table.tbl td.pos { color: var(--mint); }
+table.tbl td.neg { color: var(--coral); }
+table.tbl tr.click { cursor: pointer; }
+table.tbl tr.click:hover td { background: rgba(255,255,255,.03); }
+table.tbl tr.sel td { background: rgba(243,179,61,.1); }
+.tblwrap { overflow-x: auto; }
+
+/* Root-locus split layout (tutorial 4) */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 26px; align-items: start; }
+.split .sticky { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); }
+.rl-ctl { font-family: var(--sans); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.rl-ctl .kval { font-variant-numeric: tabular-nums; color: var(--chalk); min-width: 86px; }
+.rl-ctl input[type=range] { flex: 1 1 180px; width: auto; }
+.rl-read { font-family: var(--sans); font-size: 13.5px; color: var(--graphite); margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+.rl-read b { color: var(--chalk); font-weight: 500; font-variant-numeric: tabular-nums; }
+.rl-hover { font-family: var(--sans); font-size: 13px; color: var(--graphite); min-height: 20px; margin-top: 6px; }
+.cases { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 14px; }
+
+@media (max-width: 900px) {
+  .lab, .split { grid-template-columns: 1fr; }
+  .split .sticky { position: static; }
+  .lab .plots.two { grid-template-columns: 1fr; }
+  body { font-size: 17px; }
+}
+@media (max-width: 560px) {
+  .masthead { padding: 28px 16px 12px; }
+  main { padding: 4px 14px 60px; }
+  .sec > h2 { font-size: 25px; }
+  .plotbox canvas.tall { height: 340px; }
+  .rl-read { grid-template-columns: 1fr; }
+}
+@media print {
+  .tabbar, .step-ctl, .steps-nav { display: none; }
+  .panel { display: block !important; page-break-after: always; }
+}
+
+</style>
+</head>
+<body>
+<header class="masthead">
+  <p class="course">Control Engineering for BME, tutorial week 4</p>
+  <h1><span class="tno">4</span>Root locus</h1>
+  <p class="lede">Four problems from chapter 8 of Nise, <i>Control Systems Engineering</i> (6th ed.). Every walkthrough builds the locus one rule at a time on a live s-plane: the plot adds each layer as you step through, and the gain slider moves the closed-loop poles along the branches.</p>
+</header>
+
+<nav class="tabbar" aria-label="Exercises"><div class="inner" role="tablist">
+  <button class="tab" role="tab" data-for="ex1"><span class="n">1</span>Sketch six loci P8.2</button>
+  <button class="tab" role="tab" data-for="ex2"><span class="n">2</span>Three systems P8.3</button>
+  <button class="tab" role="tab" data-for="ex3"><span class="n">3</span>Break points P8.7</button>
+  <button class="tab" role="tab" data-for="ex4"><span class="n">4</span>Range of K for stability P8.14</button>
+</div></nav>
+
+<main>
+<!-- ===================================================== EXERCISE 1 -->
+<section class="panel" id="ex1" role="tabpanel">
+  <div class="sec">
+    <h2>Sketch the general shape of six root loci</h2>
+    <div class="problem">
+      <p>Sketch the general shape of the root locus for each of the open-loop pole-zero plots (a) to (f).</p>
+      <p class="src">Nise, chapter 8, problem 2, p. 433. Section 8.4. The figure gives no numbers, so the exact positions below are read from it (for example poles at −1 and −2); the shapes do not depend on the exact values.</p>
+    </div>
+  </div>
+  <div class="sec">
+    <h3 class="sub-h">The sketching rules (section 8.4) and why they hold</h3>
+    <div class="tblwrap"><table class="tbl" style="max-width:980px">
+      <tr><th>Rule</th><th>What it says</th><th>Why</th></tr>
+      <tr><td>Branches</td><td>There are as many branches as closed-loop poles: \(n\), the number of open-loop poles (when \(n\ge m\)).</td><td>\(1+KG(s)H(s)=0\) is a polynomial of degree \(n\).</td></tr>
+      <tr><td>Symmetry</td><td>The locus is symmetric about the real axis.</td><td>Complex roots of a real polynomial come in conjugate pairs.</td></tr>
+      <tr><td>Real axis</td><td>For \(K&gt;0\), a real-axis point is on the locus if it lies to the left of an <b>odd</b> number of real open-loop poles plus zeros.</td><td>Angle condition: every real pole or zero to the right adds 180°; complex pairs cancel.</td></tr>
+      <tr><td>Start and end</td><td>Branches start at the open-loop poles (\(K=0\)) and end at the open-loop zeros (\(K\to\infty\)), finite or at infinity.</td><td>\(D(s)+KN(s)=0\): \(K=0\) leaves \(D=0\); large \(K\) forces \(N\approx0\).</td></tr>
+      <tr><td>Asymptotes</td><td>\(n-m\) branches go to infinity along lines from \(\sigma_a=\frac{\sum p-\sum z}{n-m}\) at angles \(\theta_a=\frac{(2k+1)\,180^\circ}{n-m}\).</td><td>Far away, \(G(s)\approx1/s^{n-m}\) seen from the centroid.</td></tr>
+    </table></div>
+    <p class="small muted" style="max-width:80ch">Every point \(s\) on the locus satisfies the <b>angle condition</b> \(\angle G(s)H(s)=(2k+1)\,180^\circ\), and the gain that puts a pole there is \(K=1/|G(s)H(s)|\). Hover over the s-plane to test any point.</p>
+  </div>
+
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="cases" id="cases-ex1"></div>
+    <div class="split">
+      <div>
+        <!-- (a) -->
+        <div class="stepper" data-case="ex1-a"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Open-loop poles at \(-2\) and \(-1\), one zero at \(+1\). So \(n=2\), \(m=1\): two branches. Both start at a pole; one ends at the zero, the other at infinity.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Count the real poles and zeros to the right of each stretch:</p>
+            <ul><li>right of \(+1\): none (even), not on the locus;</li><li>between \(-1\) and \(+1\): one (the zero), on the locus;</li><li>between \(-2\) and \(-1\): two, not on the locus;</li><li>left of \(-2\): three, on the locus.</li></ul></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <p>\(n-m=1\): a single asymptote at \(\theta_a=180^\circ\), the negative real axis. The branch from \(-2\) runs off along it.</p></div>
+          <div class="step" data-title="Break points and crossings" data-layers="seg asym brk ang cross">
+            <p>The two branches live on separate segments and move apart, so they never meet: no breakaway point.</p>
+            <p>The branch from \(-1\) runs toward the zero at \(+1\) and passes through the origin. With \(1+\frac{K(s-1)}{(s+1)(s+2)}=0\), the characteristic polynomial is \(s^2+(3+K)s+(2-K)\), which has a root at \(s=0\) when \(K=2\).</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>One branch goes from \(-1\) to \(+1\), crossing into the right half-plane; the other goes from \(-2\) to \(-\infty\). This matches the posted sketch.</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>Drag the slider: the closed loop is stable for \(0&lt;K&lt;2\) only. A zero in the right half-plane pulls a branch across the axis.</p></div>
+        </div></div>
+        <!-- (b) -->
+        <div class="stepper" data-case="ex1-b"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(-1\) and \(\pm j\), no finite zeros. \(n=3\), \(m=0\): three branches, all ending at infinity.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Only one real critical point, the pole at \(-1\). Everything to its left is on the locus. The complex pair does not count: their angles cancel on the real axis.</p></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <div class="eq">\[\sigma_a=\frac{-1+0+0}{3}=-\tfrac13,\qquad\theta_a=60^\circ,\;180^\circ,\;300^\circ\]</div></div>
+          <div class="step" data-title="Departure angle" data-layers="seg asym brk ang cross">
+            <p>From the pole at \(+j\), subtract the angles of the vectors from the other poles:</p>
+            <div class="eq">\[\theta_d=180^\circ-\underbrace{90^\circ}_{\text{from }-j}-\underbrace{45^\circ}_{\text{from }-1}=45^\circ\]</div>
+            <p>The branch leaves pointing into the right half-plane.</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>The complex branches bend toward the \(\pm60^\circ\) asymptotes, entirely in the right half-plane; the real branch goes from \(-1\) to \(-\infty\).</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>With \(D(s)=(s+1)(s^2+1)\) the characteristic polynomial is \(s^3+s^2+s+(1+K)\). Its Routh \(s^1\) entry is \(1-(1+K)=-K&lt;0\): unstable for every \(K&gt;0\).</p></div>
+        </div></div>
+        <!-- (c) -->
+        <div class="stepper" data-case="ex1-c"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(\pm j\), zeros at \(-1\) and \(-2\). \(n=m=2\): both branches end on the finite zeros.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Between \(-2\) and \(-1\) there is one zero to the right: on the locus. Nowhere else.</p></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <p>\(n-m=0\): no asymptotes. Nothing goes to infinity.</p></div>
+          <div class="step" data-title="Departure angle and break-in" data-layers="seg asym brk ang cross">
+            <div class="eq">\[\theta_d=180^\circ+\underbrace{45^\circ}_{\text{zero }-1}+\underbrace{26.6^\circ}_{\text{zero }-2}-\underbrace{90^\circ}_{\text{pole }-j}=161.6^\circ\]</div>
+            <p>The branches head left and must reach the segment \([-2,-1]\). The break-in point solves \(D'N-DN'=0\): \(2\sigma(\sigma^2+3\sigma+2)-(\sigma^2+1)(2\sigma+3)=3\sigma^2+2\sigma-3=0\), so \(\sigma=-1.387\).</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>Two arcs leave \(\pm j\), meet on the real axis at \(-1.39\), then split toward \(-1\) and \(-2\). This matches the posted sketch.</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>The characteristic polynomial \((1+K)s^2+3Ks+(1+2K)\) has all coefficients positive for \(K&gt;0\): stable for every \(K&gt;0\).</p></div>
+        </div></div>
+        <!-- (d) -->
+        <div class="stepper" data-case="ex1-d"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(\pm j\), no zeros. Two branches, both to infinity.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>No real poles or zeros, so no real-axis segments.</p></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <p>\(n-m=2\): \(\theta_a=\pm90^\circ\) from \(\sigma_a=0\). The asymptotes are the imaginary axis itself.</p></div>
+          <div class="step" data-title="Departure angle" data-layers="seg asym brk ang cross">
+            <p>\(\theta_d=180^\circ-90^\circ=90^\circ\): straight up from \(+j\), straight down from \(-j\).</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>The poles slide along the \(j\omega\) axis: \(s^2+1+K=0\Rightarrow s=\pm j\sqrt{1+K}\).</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>Marginally stable for every \(K\): an undamped oscillation whose frequency \(\sqrt{1+K}\) grows with the gain.</p></div>
+        </div></div>
+        <!-- (e) -->
+        <div class="stepper" data-case="ex1-e"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Four real poles, taken as \(-1,-2,-3,-4\); no zeros. Four branches, all to infinity.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Odd counts to the right on \([-2,-1]\) (one pole) and \([-4,-3]\) (three poles).</p></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <div class="eq">\[\sigma_a=\frac{-1-2-3-4}{4}=-2.5,\qquad \theta_a=\pm45^\circ,\;\pm135^\circ\]</div></div>
+          <div class="step" data-title="Breakaway points and crossing" data-layers="seg asym brk ang cross">
+            <p>Each segment holds two poles that move toward each other, so each has a breakaway point. By symmetry about \(-2.5\) they sit at \(-1.382\) and \(-3.618\), both reached at \(K=1\).</p>
+            <p>The Routh table of \(s^4+10s^3+35s^2+50s+24+K\) gives a zero row at \(K=126\), with crossing at \(s=\pm j\sqrt5=\pm j2.236\).</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>The right pair breaks away and bends toward the \(\pm45^\circ\) asymptotes into the right half-plane; the left pair bends toward \(\pm135^\circ\). This matches the posted sketch.</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>Stable for \(0&lt;K&lt;126\).</p></div>
+        </div></div>
+        <!-- (f) -->
+        <div class="stepper" data-case="ex1-f"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(+1\) and \(+2\) (open loop unstable), zeros at \(-1\) and \(-2\). \(n=m=2\).</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>\([1,2]\) has one pole to its right; \([-2,-1]\) has two poles and one zero to its right, three in total. Both are on the locus.</p></div>
+          <div class="step" data-title="Asymptotes" data-layers="seg asym">
+            <p>\(n=m\): no asymptotes.</p></div>
+          <div class="step" data-title="Break points" data-layers="seg asym brk ang cross">
+            <p>\(D'N-DN'=(2\sigma-3)(\sigma^2+3\sigma+2)-(\sigma^2-3\sigma+2)(2\sigma+3)=6\sigma^2-12=0\), so \(\sigma=\pm\sqrt2\): breakaway at \(+1.414\) and break-in at \(-1.414\).</p></div>
+          <div class="step" data-title="Complete sketch" data-layers="seg asym brk ang cross locus">
+            <p>The poles meet at \(+1.414\), travel around a circle of radius \(\sqrt2\) centred at the origin, and rejoin the real axis at \(-1.414\) on their way to the zeros.</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>The characteristic polynomial \((1+K)s^2+(3K-3)s+2(1+K)\) is stable only when \(3K-3&gt;0\): stable for \(K&gt;1\), crossing at \(s=\pm j\sqrt2\).</p></div>
+        </div></div>
+      </div>
+      <div class="sticky"><div id="rl1"></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Summary</h2>
+    <div class="tblwrap"><table class="tbl">
+      <tr><th>Case</th><th>n, m</th><th>Real-axis segments</th><th>Asymptotes</th><th>Closed loop (positions as assumed)</th></tr>
+      <tr><td>(a)</td><td>2, 1</td><td>[−1, 1], (−∞, −2]</td><td>180°</td><td>stable for K &lt; 2</td></tr>
+      <tr><td>(b)</td><td>3, 0</td><td>(−∞, −1]</td><td>60°, 180°, 300° from −1/3</td><td>unstable for every K &gt; 0</td></tr>
+      <tr><td>(c)</td><td>2, 2</td><td>[−2, −1]</td><td>none</td><td>stable for every K &gt; 0</td></tr>
+      <tr><td>(d)</td><td>2, 0</td><td>none</td><td>±90° from 0</td><td>marginally stable</td></tr>
+      <tr><td>(e)</td><td>4, 0</td><td>[−2, −1], [−4, −3]</td><td>±45°, ±135° from −2.5</td><td>stable for K &lt; 126</td></tr>
+      <tr><td>(f)</td><td>2, 2</td><td>[1, 2], [−2, −1]</td><td>none</td><td>stable for K &gt; 1</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ===================================================== EXERCISE 2 -->
+<section class="panel" id="ex2" role="tabpanel">
+  <div class="sec">
+    <h2>Sketch the root locus of three unity-feedback systems</h2>
+    <div class="problem">
+      <p>Sketch the root locus of the unity-feedback system for</p>
+      <div class="eq">\[\text{(a)}\;G(s)=\frac{K(s+2)(s+6)}{s^2+8s+25},\qquad\text{(b)}\;G(s)=\frac{K(s^2+4)}{s^2+1},\qquad\text{(c)}\;G(s)=\frac{K(s^2+1)}{s^2}\]</div>
+      <p class="src">Nise, chapter 8, problem 3 (a, b, c), p. 433. Section 8.4.</p>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="cases" id="cases-ex2"></div>
+    <div class="split">
+      <div>
+        <div class="stepper" data-case="ex2-a"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Zeros: \(s=-2\) and \(s=-6\). Poles from the quadratic formula:</p>
+            <div class="eq">\[s=\frac{-8\pm\sqrt{8^2-4\cdot25}}{2}=\frac{-8\pm\sqrt{-36}}{2}=-4\pm j3\]</div></div>
+          <div class="step" data-title="Real-axis segment" data-layers="seg">
+            <p>Only \([-6,-2]\) has an odd count (the zero at \(-2\)) to its right.</p></div>
+          <div class="step" data-title="No asymptotes" data-layers="seg asym">
+            <p>\(n=m=2\): both branches end on the zeros \(-2\) and \(-6\).</p></div>
+          <div class="step" data-title="Departure angle" data-layers="seg asym ang">
+            <p>At the pole \(-4+j3\), angles from the zeros: \(\angle(-2+3j)=123.7^\circ\), \(\angle(2+3j)=56.3^\circ\); from the other pole: \(\angle(6j)=90^\circ\).</p>
+            <div class="eq">\[\theta_d=180^\circ+123.7^\circ+56.3^\circ-90^\circ=270^\circ\equiv-90^\circ\]</div>
+            <p>The upper branch leaves straight down.</p></div>
+          <div class="step" data-title="The locus in closed form" data-layers="seg asym ang brk locus">
+            <p>This one can be solved exactly. \(1+G=0\) gives</p>
+            <div class="eq">\[(1+K)s^2+8(1+K)s+(25+12K)=0\;\Rightarrow\;s=-4\pm j\sqrt{\frac{9-4K}{1+K}}\]</div>
+            <p>The real part is always \(-4\): the branches run straight down the line \(\sigma=-4\) and meet at the break-in point \(s=-4\) when \(K=9/4=2.25\). Check: \(D'N-DN'=(2s+8)(12-25)=0\) at \(s=-4\).</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>For \(K&gt;2.25\) the two poles split along the real axis toward \(-2\) and \(-6\). The closed loop is stable for every \(K&gt;0\).</p></div>
+        </div></div>
+        <div class="stepper" data-case="ex2-b"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>\(s^2+4=0\Rightarrow\) zeros at \(\pm j2\). \(s^2+1=0\Rightarrow\) poles at \(\pm j\).</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>No real poles or zeros, so nothing on the real axis.</p></div>
+          <div class="step" data-title="No asymptotes" data-layers="seg asym">
+            <p>\(n=m=2\): the branches end on the zeros \(\pm j2\).</p></div>
+          <div class="step" data-title="Departure angle" data-layers="seg asym ang">
+            <div class="eq">\[\theta_d=180^\circ+\underbrace{(-90^\circ)}_{\text{zero }+j2}+\underbrace{90^\circ}_{\text{zero }-j2}-\underbrace{90^\circ}_{\text{pole }-j}=90^\circ\]</div>
+            <p>The upper branch leaves straight up, along the \(j\omega\) axis.</p></div>
+          <div class="step" data-title="The locus in closed form" data-layers="seg asym ang brk locus">
+            <div class="eq">\[(1+K)s^2+(1+4K)=0\;\Rightarrow\;s=\pm j\sqrt{\frac{1+4K}{1+K}}\]</div>
+            <p>The poles climb the \(j\omega\) axis from \(\pm j\) (\(K=0\)) to \(\pm j2\) (\(K\to\infty\)).</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>Marginally stable for every \(K\): a sustained oscillation between 1 and 2 rad/s.</p></div>
+        </div></div>
+        <div class="stepper" data-case="ex2-c"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>\(s^2=0\Rightarrow\) a double pole at the origin. \(s^2+1=0\Rightarrow\) zeros at \(\pm j\).</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Left of the origin there are two poles to the right, an even count. No real-axis segment: the branches must leave the axis immediately.</p></div>
+          <div class="step" data-title="No asymptotes" data-layers="seg asym">
+            <p>\(n=m=2\): the branches end on \(\pm j\).</p></div>
+          <div class="step" data-title="Leaving the double pole" data-layers="seg asym ang">
+            <p>Two branches starting from the same point split symmetrically, here at \(\pm90^\circ\): the origin acts as a breakaway point at \(K=0\). They arrive at \(\pm j\) vertically:</p>
+            <div class="eq">\[\theta_a=180^\circ+\underbrace{2\cdot90^\circ}_{\text{double pole}}-\underbrace{90^\circ}_{\text{zero }-j}=270^\circ\equiv-90^\circ\]</div></div>
+          <div class="step" data-title="The locus in closed form" data-layers="seg asym ang brk locus">
+            <div class="eq">\[(1+K)s^2+K=0\;\Rightarrow\;s=\pm j\sqrt{\frac{K}{1+K}}\]</div>
+            <p>The branches go up and down the \(j\omega\) axis from \(0\) to \(\pm j\).</p></div>
+          <div class="step" data-title="Move the gain" data-layers="all">
+            <p>Marginally stable for every \(K&gt;0\).</p></div>
+        </div></div>
+      </div>
+      <div class="sticky"><div id="rl2"></div></div>
+    </div>
+  </div>
+  <div class="sec"><div class="erratum"><div class="rt">Note on the posted solution</div>
+    <p>The posted solution finds the poles and zeros and then says “this gives us the sketch” three times, but no sketches are included. The loci above fill that gap: (a) a vertical segment on \(\sigma=-4\) plus the real segment \([-6,-2]\); (b) and (c) lie entirely on the \(j\omega\) axis.</p></div></div>
+</section>
+
+<!-- ===================================================== EXERCISE 3 -->
+<section class="panel" id="ex3" role="tabpanel">
+  <div class="sec">
+    <h2>Sketch the locus and find the break-in and breakaway points</h2>
+    <div class="problem">
+      <p>Sketch the root locus of the unity-feedback system with \(G(s)=\dfrac{K(s+3)(s+5)}{(s+1)(s-7)}\) and find the break-in and breakaway points.</p>
+      <p class="src">Nise, chapter 8, problem 7, p. 433. Section 8.5.</p>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="split">
+      <div class="stepper" id="st3"><div class="steps-nav"></div><div class="step-body">
+        <div class="step" data-title="Poles and zeros" data-layers="">
+          <p>Poles at \(-1\) and \(+7\): the open loop is unstable. Zeros at \(-3\) and \(-5\). \(n=m=2\).</p>
+          <div class="eq">\[KG(s)=\frac{K(s^2+8s+15)}{s^2-6s-7}\]</div></div>
+        <div class="step" data-title="Real-axis segments" data-layers="seg">
+          <p>\([-1,7]\): one pole (\(+7\)) to the right. \([-5,-3]\): three to the right. So the poles \(-1\) and \(+7\) move toward each other, must break away somewhere between them, and come back to the axis between the zeros.</p></div>
+        <div class="step" data-title="Method 1: differentiate K(σ)" data-layers="seg brk">
+          <p>On the locus \(KG=-1\). On the real axis \(s=\sigma\), so</p>
+          <div class="eq">\[K(\sigma)=-\frac{\sigma^2-6\sigma-7}{\sigma^2+8\sigma+15}\]</div>
+          <p>Break points are where \(K\) is extreme along the axis. With the quotient rule:</p>
+          <div class="eq">\[\frac{dK}{d\sigma}=-\frac{(2\sigma-6)(\sigma^2+8\sigma+15)-(\sigma^2-6\sigma-7)(2\sigma+8)}{(\sigma^2+8\sigma+15)^2}=-\frac{2(7\sigma^2+22\sigma-17)}{(\sigma^2+8\sigma+15)^2}\]</div>
+          <div class="eq">\[7\sigma^2+22\sigma-17=0\;\Rightarrow\;\sigma=\frac{-22\pm\sqrt{22^2+4\cdot7\cdot17}}{14}=\frac{-22\pm30.98}{14}\]</div>
+          <div class="eq">\[\sigma_1=0.642,\qquad \sigma_2=-3.78\]</div></div>
+        <div class="step" data-title="Method 2: the transition method" data-layers="seg brk">
+          <p>Skip the derivative: on the real axis the break points satisfy \(\sum\frac{1}{\sigma+z_i}=\sum\frac{1}{\sigma+p_i}\), with \(z_i,p_i\) the negatives of the zero and pole values:</p>
+          <div class="eq">\[\frac{1}{\sigma+3}+\frac{1}{\sigma+5}=\frac{1}{\sigma+1}+\frac{1}{\sigma-7}\]</div>
+          <div class="eq">\[(2\sigma+8)(\sigma^2-6\sigma-7)=(2\sigma-6)(\sigma^2+8\sigma+15)\;\Rightarrow\;14\sigma^2+44\sigma-34=0\]</div>
+          <p>The same quadratic (times 2), the same two roots.</p></div>
+        <div class="step" data-title="Which is which?" data-layers="seg brk locus">
+          <p>On \([-1,7]\), \(K\) rises from 0 and falls back to 0: \(\sigma=0.642\) is a <b>maximum</b> of \(K\) (\(K=0.508\)), the <b>breakaway</b> point. On \([-5,-3]\), \(K\) comes down from infinity and goes back up: \(\sigma=-3.78\) is a <b>minimum</b> (\(K=31.5\)), the <b>break-in</b> point. The K(σ) plot below shows both.</p></div>
+        <div class="step" data-title="Bonus: where it crosses the jω axis" data-layers="all" data-k="0.75">
+          <p>The characteristic polynomial is \((1+K)s^2+(8K-6)s+(15K-7)\). A second-order polynomial is stable when all its coefficients are positive, so the closed loop is stable for \(K&gt;0.75\). At \(K=0.75\):</p>
+          <div class="eq">\[1.75s^2+4.25=0\;\Rightarrow\;s=\pm j1.558\]</div>
+          <p>The complex part of this locus is a circle through the two break points: centre \(-1.571\), radius \(2.213\). The marker at the origin is the pole that started at \(-1\): it moves right and enters the right half-plane at \(K=0.467\) (where \(15K-7=0\)), before meeting the other pole at the breakaway point. Feedback with \(K&gt;0.75\) stabilises an open-loop unstable plant.</p></div>
+      </div></div>
+      <div class="sticky"><div id="rl3"></div></div>
+    </div>
+  </div>
+  <div class="sec"><div class="result"><div class="rt">Result</div>\[\text{breakaway } \sigma=0.642\ (K=0.508),\qquad \text{break-in } \sigma=-3.78\ (K=31.5),\qquad \text{stable for }K&gt;0.75\]</div></div>
+  <div class="sec">
+    <h2>Lab: K along the real axis</h2>
+    <p class="prose">The curve is \(K(\sigma)=-D(\sigma)/N(\sigma)\), drawn only where the real axis is part of the locus. The amber line is the current gain from the slider above: wherever it meets the curve there is a real closed-loop pole. When the line rises above the breakaway maximum it no longer meets that segment, because those two poles have become complex.</p>
+    <div class="plotbox"><div class="pt"><span>K(σ) on the real-axis segments</span><span>violet: break points</span></div><canvas id="ks3"></canvas></div>
+  </div>
+  <div class="sec"><div class="erratum"><div class="rt">Note on the posted solution</div>
+    <p>The first line writes the open-loop denominator as \(s^2-6s+7\). It should be \((s+1)(s-7)=s^2-6s-7\); the following lines use the correct form, and the results \(0.642\) and \(-3.78\) are right.</p></div></div>
+</section>
+
+<!-- ===================================================== EXERCISE 4 -->
+<section class="panel" id="ex4" role="tabpanel">
+  <div class="sec">
+    <h2>Sketch the locus and find the range of K for stability</h2>
+    <div class="problem">
+      <p>Sketch the root locus and find the range of \(K\) for stability of the unity-feedback system with</p>
+      <div class="eq">\[\text{(a)}\;G(s)=\frac{K(s^2+1)}{(s-1)(s+2)(s+3)},\qquad\text{(b)}\;G(s)=\frac{K(s^2-2s+2)}{s(s+1)(s+2)}\]</div>
+      <p class="src">Nise, chapter 8, problem 14, p. 434. Section 8.5.</p>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="cases" id="cases-ex4"></div>
+    <div class="split">
+      <div>
+        <div class="stepper" data-case="ex4-a"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(+1\), \(-2\), \(-3\) (one in the right half-plane); zeros at \(\pm j\). \(n=3\), \(m=2\).</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>Only real poles and zeros count; the zeros \(\pm j\) do not. On \([-2,1]\) there is one pole to the right; left of \(-3\) there are three. Both are on the locus.</p></div>
+          <div class="step" data-title="Asymptote" data-layers="seg asym">
+            <p>\(n-m=1\): one asymptote at \(180^\circ\). The centroid formula gives \(\sigma_a=\frac{(1-2-3)-(0)}{1}=-4\), but with a single asymptote at \(180^\circ\) it is simply the negative real axis, which the branch from \(-3\) already follows.</p></div>
+          <div class="step" data-title="Breakaway point: include the zeros" data-layers="seg asym brk ang">
+            <p>The poles \(+1\) and \(-2\) approach each other on \([-2,1]\) and break away toward the zeros \(\pm j\). The transition method must include <b>all</b> zeros, complex ones too:</p>
+            <div class="eq">\[\frac{1}{\sigma-1}+\frac{1}{\sigma+2}+\frac{1}{\sigma+3}=\frac{1}{\sigma-j}+\frac{1}{\sigma+j}=\frac{2\sigma}{\sigma^2+1}\]</div>
+            <div class="eq">\[(3\sigma^2+8\sigma+1)(\sigma^2+1)=2\sigma(\sigma^3+4\sigma^2+\sigma-6)\;\Rightarrow\;\sigma^4+2\sigma^2+20\sigma+1=0\]</div>
+            <p>Real roots: \(\sigma=-0.050\) (on \([-2,1]\), \(K=6.03\): the breakaway) and \(\sigma=-2.449\) (between \(-3\) and \(-2\), not on the locus). Arrival angle at \(+j\): \(180^\circ+(135^\circ+26.6^\circ+18.4^\circ)-90^\circ=270^\circ\), so the branches reach the zeros vertically from below.</p></div>
+          <div class="step" data-title="Characteristic polynomial and Routh table" data-layers="seg asym brk ang cross locus" data-k="6">
+            <div class="eq">\[(s-1)(s+2)(s+3)+K(s^2+1)=s^3+(4+K)s^2+s+(K-6)\]</div>
+            <div class="tblwrap"><table class="tbl"><tr><th></th><th>col 1</th><th>col 2</th></tr>
+              <tr><td>\(s^3\)</td><td>\(1\)</td><td>\(1\)</td></tr><tr><td>\(s^2\)</td><td>\(4+K\)</td><td>\(K-6\)</td></tr>
+              <tr><td>\(s^1\)</td><td>\(\dfrac{(4+K)\cdot1-1\cdot(K-6)}{4+K}=\dfrac{10}{4+K}\)</td><td>0</td></tr><tr><td>\(s^0\)</td><td>\(K-6\)</td><td></td></tr></table></div>
+            <p>The first column is positive exactly when \(K&gt;6\). At \(K=6\) the constant term vanishes: the branch from \(+1\) crosses into the left half-plane through \(s=0\) (the slider is set there now).</p></div>
+          <div class="step" data-title="Range of K" data-layers="all" data-k="15">
+            <p><b>Stable for \(K&gt;6\).</b> Just after the crossing the two poles meet at \(-0.050\) (\(K=6.03\)) and then head for the zeros at \(\pm j\). Their real part never gets further left than \(-0.05\), so the loop is stable but always very lightly damped: look at the long ringing in the step response.</p></div>
+        </div></div>
+        <div class="stepper" data-case="ex4-b"><div class="steps-nav"></div><div class="step-body">
+          <div class="step" data-title="Poles and zeros" data-layers="">
+            <p>Poles at \(0,-1,-2\). Zeros from \(s^2-2s+2=0\): \(s=\frac{2\pm\sqrt{4-8}}{2}=1\pm j\), in the right half-plane.</p></div>
+          <div class="step" data-title="Real-axis segments" data-layers="seg">
+            <p>\([-1,0]\) (one pole to the right) and \((-\infty,-2]\) (three).</p></div>
+          <div class="step" data-title="Asymptote" data-layers="seg asym">
+            <p>\(n-m=1\): one asymptote, the negative real axis. The pole at \(-2\) leaves along it.</p></div>
+          <div class="step" data-title="Breakaway and arrival" data-layers="seg asym brk ang">
+            <p>\(D'N-DN'=(3\sigma^2+6\sigma+2)(\sigma^2-2\sigma+2)-(\sigma^3+3\sigma^2+2\sigma)(2\sigma-2)=\sigma^4-4\sigma^3-2\sigma^2+12\sigma+4=0\)</p>
+            <p>The only root on \([-1,0]\) is \(\sigma=-0.328\) (\(K=0.133\)): the breakaway point. Arrival angle at \(1+j\): \(180^\circ+(45^\circ+26.6^\circ+18.4^\circ)-90^\circ=180^\circ\), from the left.</p></div>
+          <div class="step" data-title="Characteristic polynomial and Routh table" data-layers="seg asym brk ang cross locus" data-k="0.5">
+            <div class="eq">\[s(s+1)(s+2)+K(s^2-2s+2)=s^3+(3+K)s^2+(2-2K)s+2K\]</div>
+            <div class="tblwrap"><table class="tbl"><tr><th></th><th>col 1</th><th>col 2</th></tr>
+              <tr><td>\(s^3\)</td><td>\(1\)</td><td>\(2-2K\)</td></tr><tr><td>\(s^2\)</td><td>\(3+K\)</td><td>\(2K\)</td></tr>
+              <tr><td>\(s^1\)</td><td>\(\dfrac{(3+K)(2-2K)-2K}{3+K}=\dfrac{-2K^2-6K+6}{3+K}\)</td><td>0</td></tr><tr><td>\(s^0\)</td><td>\(2K\)</td><td></td></tr></table></div>
+            <p>Positive first column needs \(2K&gt;0\) and \(K^2+3K-3&lt;0\):</p>
+            <div class="eq">\[0&lt;K&lt;\frac{-3+\sqrt{21}}{2}=0.791\]</div></div>
+          <div class="step" data-title="Where it crosses" data-layers="all" data-k="0.7912878">
+            <p>At \(K=0.791\) the \(s^1\) row is zero. The auxiliary polynomial from the \(s^2\) row gives the crossing:</p>
+            <div class="eq">\[(3+K)s^2+2K=0\;\Rightarrow\;3.791s^2+1.583=0\;\Rightarrow\;s=\pm j0.646\]</div>
+            <p><b>Stable for \(0&lt;K&lt;0.791\).</b> The right-half-plane zeros pull the branches across the axis.</p></div>
+        </div></div>
+      </div>
+      <div class="sticky"><div id="rl4"></div></div>
+    </div>
+  </div>
+  <div class="sec"><div class="result"><div class="rt">Result</div>\[\text{(a) stable for } K&gt;6,\qquad \text{(b) stable for } 0&lt;K&lt;0.791\ \ (\text{crossing at } \pm j0.646)\]</div></div>
+  <div class="sec">
+    <h2>Lab: live Routh table and K along the real axis</h2>
+    <p class="prose">Both follow the gain slider of the root-locus plot above. The Routh first column changes sign exactly when a branch crosses the \(j\omega\) axis.</p>
+    <div class="lab" style="grid-template-columns:minmax(260px,380px) 1fr">
+      <div id="routh4" class="readout" style="border-top:0;margin-top:0"></div>
+      <div class="plotbox"><div class="pt"><span>K(σ) on the real-axis segments</span><span>amber dots: real closed-loop poles</span></div><canvas id="ks4"></canvas><p class="src" id="ks4cap" style="margin:6px 4px 0"></p></div>
+    </div>
+  </div>
+  <div class="sec"><div class="erratum"><div class="rt">Note on the posted solution</div>
+    <p>Case (a), breakaway point. The posted solution keeps only the real poles, \(\frac{1}{s-1}+\frac{1}{s+2}+\frac{1}{s+3}=0\), and a stray factor 5 appears in the expansion. The zeros at \(\pm j\) must be included, which gives \(\sigma^4+2\sigma^2+20\sigma+1=0\) and a breakaway at \(\sigma\approx-0.050\), not \(-0.13\). In the K(σ) plot the posted value is marked in coral: it is not where \(K\) peaks.</p>
+    <p>Case (a), Routh table. The entries \(1\) and \(K-6\) are swapped between the \(s^3\) and \(s^2\) rows; the correct rows are \([1,\;1]\) and \([4+K,\;K-6]\). The conclusion \(K&gt;6\) is still right.</p>
+    <p>Case (b). The range should read \(0&lt;K&lt;0.791\): the \(s^0\) entry \(2K\) also has to be positive.</p></div></div>
+</section>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Shared engine for the Control Engineering tutorial pages
+   - complex numbers & polynomials (roots by Aberth–Ehrlich)
+   - exact step-response simulation (ZOH-exact via matrix exponential)
+   - canvas plotting, SVG block-diagram renderer, stepper, tabs
+   - interactive root-locus widget
+   ===================================================================== */
+
+/* ---------------- helpers ---------------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const minus = s => String(s).replace(/-/g, "−");
+function fmt(x, d = 3) {
+  if (x === Infinity) return "∞";
+  if (x === -Infinity) return "−∞";
+  if (!isFinite(x)) return "—";
+  const ax = Math.abs(x);
+  if (ax < 0.5 * Math.pow(10, -d)) return "0";
+  let s;
+  if (ax >= 1e6 || ax < 1e-3) s = x.toExponential(2);
+  else s = String(+x.toFixed(d));
+  return minus(s);
+}
+function fmtC(z, d = 3) {
+  const [re, im] = z;
+  if (Math.abs(im) < 1e-7 * (1 + Math.abs(re))) return fmt(re, d);
+  const r = Math.abs(re) < 0.5 * Math.pow(10, -d) ? "" : fmt(re, d) + " ";
+  return r + (im < 0 ? "− " : (r ? "+ " : "")) + "j" + fmt(Math.abs(im), d);
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+/* ---------------- complex ---------------- */
+const Cx = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
+  mul: (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]],
+  div: (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; },
+  abs: a => Math.hypot(a[0], a[1]),
+  arg: a => Math.atan2(a[1], a[0]),
+};
+
+/* ---------------- polynomials (highest power first) ---------------- */
+const Poly = {
+  trim(p) { let i = 0; while (i < p.length - 1 && Math.abs(p[i]) < 1e-14) i++; return p.slice(i); },
+  add(a, b) {
+    const n = Math.max(a.length, b.length), r = new Array(n).fill(0);
+    a.forEach((v, i) => r[n - a.length + i] += v);
+    b.forEach((v, i) => r[n - b.length + i] += v);
+    return r;
+  },
+  scale(a, k) { return a.map(v => v * k); },
+  mul(a, b) {
+    const r = new Array(a.length + b.length - 1).fill(0);
+    for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++) r[i + j] += a[i] * b[j];
+    return r;
+  },
+  fromRoots(rs) {
+    let p = [[1, 0]];
+    for (const r of rs) {
+      const q = Array.from({ length: p.length + 1 }, () => [0, 0]);
+      for (let i = 0; i < p.length; i++) { q[i] = Cx.add(q[i], p[i]); q[i + 1] = Cx.sub(q[i + 1], Cx.mul(p[i], r)); }
+      p = q;
+    }
+    return p.map(c => Math.abs(c[0]) < 1e-13 ? 0 : c[0]);
+  },
+  evalR(p, x) { let v = 0; for (const c of p) v = v * x + c; return v; },
+  evalC(p, z) { let v = [0, 0]; for (const c of p) { v = Cx.mul(v, z); v[0] += c; } return v; },
+  deriv(p) { const n = p.length - 1; if (n <= 0) return [0]; return p.slice(0, -1).map((c, i) => c * (n - i)); },
+  roots(p, guess) {
+    p = Poly.trim(p.slice());
+    const n = p.length - 1;
+    if (n < 1) return [];
+    const a = p.map(c => c / p[0]);
+    if (n === 1) return [[-a[1], 0]];
+    if (n === 2) {
+      const b = a[1], c = a[2], disc = b * b - 4 * c;
+      if (disc >= 0) { const q = -0.5 * (b + (b >= 0 ? 1 : -1) * Math.sqrt(disc)); const r1 = q, r2 = q !== 0 ? c / q : 0; return [[r1, 0], [r2, 0]]; }
+      const w = Math.sqrt(-disc) / 2; return [[-b / 2, w], [-b / 2, -w]];
+    }
+    const da = Poly.deriv(a);
+    let z;
+    if (guess && guess.length === n) {
+      // warm start; a small asymmetric complex nudge breaks the real / conjugate symmetry
+      // that would otherwise trap the iteration near break points
+      let sc = 1e-3; guess.forEach(g => { sc = Math.max(sc, Math.abs(g[0]), Math.abs(g[1])); });
+      z = guess.map((g, i) => [g[0] + sc * 1e-4 * (0.37 + 0.29 * i), g[1] + sc * 1e-4 * (0.61 - 0.23 * i)]);
+    } else {
+      let R = 0; for (let i = 1; i <= n; i++) R = Math.max(R, Math.pow(Math.abs(a[i]), 1 / i));
+      R = Math.max(R, 1e-3);
+      const c0 = -a[1] / n;
+      z = []; for (let k = 0; k < n; k++) { const t = 2 * Math.PI * k / n + 0.4; z.push([c0 + R * Math.cos(t), R * Math.sin(t)]); }
+    }
+    for (let it = 0; it < 600; it++) {
+      let maxc = 0, sc = 0;
+      for (let k = 0; k < n; k++) {
+        const pk = Poly.evalC(a, z[k]);
+        if (pk[0] === 0 && pk[1] === 0) continue;
+        const dk = Poly.evalC(da, z[k]);
+        const ratio = Cx.div(pk, dk);
+        let s = [0, 0];
+        for (let j = 0; j < n; j++) if (j !== k) s = Cx.add(s, Cx.div([1, 0], Cx.sub(z[k], z[j])));
+        const w = Cx.div(ratio, Cx.sub([1, 0], Cx.mul(ratio, s)));
+        if (!isFinite(w[0]) || !isFinite(w[1])) { z[k] = [z[k][0] + 1e-6, z[k][1] + 1.3e-6]; maxc = 1; continue; }
+        z[k] = Cx.sub(z[k], w);
+        maxc = Math.max(maxc, Cx.abs(w)); sc = Math.max(sc, Cx.abs(z[k]));
+      }
+      if (maxc <= 1e-13 * (1 + sc)) break;
+    }
+    return z;
+  },
+  realRoots(p, tol = 1e-6) {
+    return Poly.roots(p).filter(z => Math.abs(z[1]) < tol * (1 + Math.abs(z[0]))).map(z => z[0]).sort((a, b) => a - b);
+  },
+};
+
+/* root matching (keeps branches continuous) */
+const _perms = {};
+function perms(n) {
+  if (_perms[n]) return _perms[n];
+  const out = [], a = [...Array(n).keys()];
+  const rec = k => { if (k === n) { out.push(a.slice()); return; } for (let i = k; i < n; i++) { [a[k], a[i]] = [a[i], a[k]]; rec(k + 1); [a[k], a[i]] = [a[i], a[k]]; } };
+  rec(0); return (_perms[n] = out);
+}
+function matchRoots(prev, next) {
+  const n = prev.length;
+  if (next.length !== n || n === 0) return next;
+  const d = prev.map(p => next.map(q => (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2));
+  if (n > 6) { // greedy
+    const used = new Set(), out = [];
+    for (let i = 0; i < n; i++) { let bj = -1, bd = Infinity; for (let j = 0; j < n; j++) if (!used.has(j) && d[i][j] < bd) { bd = d[i][j]; bj = j; } used.add(bj); out.push(next[bj]); }
+    return out;
+  }
+  let best = null, bc = Infinity;
+  for (const pm of perms(n)) { let c = 0; for (let i = 0; i < n && c < bc; i++) c += d[i][pm[i]]; if (c < bc) { bc = c; best = pm; } }
+  return best.map(j => next[j]);
+}
+
+/* Routh array (numeric) */
+function routh(c) {
+  c = Poly.trim(c);
+  const n = c.length - 1, w = Math.ceil((n + 1) / 2);
+  const r0 = [], r1 = [];
+  for (let i = 0; i <= n; i++) (i % 2 ? r1 : r0).push(c[i]);
+  while (r0.length < w) r0.push(0);
+  while (r1.length < w) r1.push(0);
+  const rows = [r0, r1]; let eps = false;
+  for (let i = 2; i <= n; i++) {
+    const A = rows[i - 2], B = rows[i - 1].slice();
+    if (Math.abs(B[0]) < 1e-12) { B[0] = 1e-9; eps = true; }
+    const R = [];
+    for (let j = 0; j < w; j++) R.push(j + 1 < w ? (B[0] * A[j + 1] - A[0] * (B[j + 1] || 0)) / B[0] : 0);
+    rows.push(R);
+  }
+  const first = rows.map(r => r[0]);
+  let changes = 0; for (let i = 1; i < first.length; i++) if (Math.sign(first[i]) !== Math.sign(first[i - 1]) && first[i] !== 0 && first[i - 1] !== 0) changes++;
+  return { rows: rows.slice(0, n + 1), first: first.slice(0, n + 1), changes, eps };
+}
+
+/* ---------------- linear algebra / simulation ---------------- */
+function matMul(A, B) {
+  const n = A.length, m = B[0].length, k = B.length, R = Array.from({ length: n }, () => new Array(m).fill(0));
+  for (let i = 0; i < n; i++) for (let l = 0; l < k; l++) { const a = A[i][l]; if (a) for (let j = 0; j < m; j++) R[i][j] += a * B[l][j]; }
+  return R;
+}
+function eye(n) { return Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))); }
+function expm(M) {
+  const n = M.length; let nrm = 0;
+  for (const r of M) nrm = Math.max(nrm, r.reduce((s, v) => s + Math.abs(v), 0));
+  const s = Math.max(0, Math.ceil(Math.log2(nrm || 1)) + 1);
+  const Ms = M.map(r => r.map(v => v / Math.pow(2, s)));
+  let E = eye(n), T = eye(n);
+  for (let k = 1; k <= 18; k++) { T = matMul(T, Ms).map(r => r.map(v => v / k)); E = E.map((r, i) => r.map((v, j) => v + T[i][j])); }
+  for (let i = 0; i < s; i++) E = matMul(E, E);
+  return E;
+}
+function tf2ss(num, den) {
+  den = Poly.trim(den); num = Poly.trim(num);
+  const n = den.length - 1, a = den.map(c => c / den[0]), b = num.map(c => c / den[0]);
+  const bb = new Array(Math.max(0, n + 1 - b.length)).fill(0).concat(b);
+  const d = bb[0];
+  const c = []; for (let i = 1; i <= n; i++) c.push(bb[i] - d * a[i]);
+  const A = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = 0; i < n - 1; i++) A[i][i + 1] = 1;
+  for (let j = 0; j < n; j++) A[n - 1][j] = -a[n - j];
+  const B = new Array(n).fill(0); if (n) B[n - 1] = 1;
+  const C = c.slice().reverse();
+  return { n, A, B, C, D: d };
+}
+/* exact step response (u = 1 for t >= 0) */
+function stepResponse(num, den, Tend, N = 700) {
+  const ss = tf2ss(num, den), n = ss.n, h = Tend / N;
+  const t = [], y = [];
+  if (n === 0) { for (let k = 0; k <= N; k++) { t.push(k * h); y.push(ss.D); } return { t, y }; }
+  const M = Array.from({ length: n + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) M[i][j] = ss.A[i][j] * h; M[i][n] = ss.B[i] * h; }
+  const E = expm(M);
+  let x = new Array(n).fill(0);
+  for (let k = 0; k <= N; k++) {
+    t.push(k * h);
+    let yy = ss.D; for (let i = 0; i < n; i++) yy += ss.C[i] * x[i];
+    y.push(yy);
+    const xn = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) { let v = E[i][n]; for (let j = 0; j < n; j++) v += E[i][j] * x[j]; xn[i] = isFinite(v) ? v : (v > 0 ? 1e300 : -1e300); }
+    x = xn;
+  }
+  return { t, y };
+}
+/* pick a sensible horizon from the closed-loop poles */
+function autoHorizon(den) {
+  const r = Poly.roots(den);
+  let maxRe = -Infinity, slow = Infinity, wmin = Infinity;
+  for (const z of r) { maxRe = Math.max(maxRe, z[0]); if (z[0] < -1e-9) slow = Math.min(slow, -z[0]); if (Math.abs(z[1]) > 1e-6) wmin = Math.min(wmin, Math.abs(z[1])); }
+  if (maxRe > 1e-6) return Math.min(30, Math.max(1, 5 / maxRe));
+  if (maxRe > -1e-6) return isFinite(wmin) ? Math.min(60, 6 * 2 * Math.PI / wmin) : 20;
+  return Math.min(120, Math.max(0.5, 6 / slow));
+}
+function stepInfo(t, y, yss) {
+  let imax = 0; for (let i = 1; i < y.length; i++) if (y[i] > y[imax]) imax = i;
+  const info = { peak: y[imax], Tp: t[imax], OS: yss ? (y[imax] - yss) / Math.abs(yss) * 100 : NaN };
+  const cross = lvl => { for (let i = 1; i < y.length; i++) if ((y[i - 1] - lvl) * (y[i] - lvl) <= 0 && y[i] !== y[i - 1]) return t[i - 1] + (lvl - y[i - 1]) / (y[i] - y[i - 1]) * (t[i] - t[i - 1]); return NaN; };
+  info.Tr = cross(0.9 * yss) - cross(0.1 * yss);
+  const band = 0.02 * Math.abs(yss);
+  let last = -1; for (let i = 0; i < y.length; i++) if (Math.abs(y[i] - yss) > band) last = i;
+  if (last === y.length - 1) info.Ts = NaN;
+  else if (last < 0) info.Ts = 0;
+  else { const i = last; const target = y[i] > yss ? yss + band : yss - band; info.Ts = t[i] + (target - y[i]) / (y[i + 1] - y[i]) * (t[i + 1] - t[i]); }
+  if (info.OS < 0.005) { info.OS = 0; }
+  return info;
+}
+
+/* ---------------- colours & canvas plotting ---------------- */
+const _col = {};
+function col(n) { return _col[n] || (_col[n] = (getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim() || "#fff")); }
+function rgba(hex, a) { const h = hex.replace("#", ""); const v = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16); return `rgba(${v >> 16 & 255},${v >> 8 & 255},${v & 255},${a})`; }
+function niceStep(range, target) { const raw = range / Math.max(1, target); const p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * p; }
+function prepCanvas(cv) {
+  const r = cv.getBoundingClientRect();
+  if (r.width < 4 || r.height < 4) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const W = r.width, H = r.height;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const ctx = cv.getContext("2d"); if (!ctx) return null;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  return { ctx, W, H };
+}
+const FONT_UI = '12px "IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
+function drawPlot(cv, cfg) {
+  const pc = prepCanvas(cv); if (!pc) return null;
+  const { ctx, W, H } = pc;
+  const pad = Object.assign({ l: 48, r: 12, t: 10, b: 30 }, cfg.pad || {});
+  let [x0, x1] = cfg.xlim, [y0, y1] = cfg.ylim;
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  if (cfg.equal) {
+    const sx = pw / (x1 - x0), sy = ph / (y1 - y0);
+    if (sx > sy) { const c = (x0 + x1) / 2, h = pw / sy / 2; x0 = c - h; x1 = c + h; }
+    else { const c = (y0 + y1) / 2, h = ph / sx / 2; y0 = c - h; y1 = c + h; }
+  }
+  const X = x => pad.l + (x - x0) / (x1 - x0) * pw;
+  const Y = y => pad.t + (y1 - y) / (y1 - y0) * ph;
+  const T = { ctx, X, Y, x0, x1, y0, y1, pad, W, H, pw, ph, sx: pw / (x1 - x0), sy: ph / (y1 - y0),
+    inv: (px, py) => [x0 + (px - pad.l) / pw * (x1 - x0), y1 - (py - pad.t) / ph * (y1 - y0)] };
+  ctx.font = FONT_UI; ctx.lineWidth = 1;
+  const xs = cfg.xstep || niceStep(x1 - x0, pw / 80), ys = cfg.ystep || niceStep(y1 - y0, ph / 48);
+  const dec = s => Math.max(0, -Math.floor(Math.log10(s) + 1e-9));
+  ctx.strokeStyle = "rgba(108,150,214,.10)"; ctx.fillStyle = col("faint");
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let v = Math.ceil(x0 / xs) * xs; v <= x1 + 1e-9 * xs; v += xs) {
+    const px = Math.round(X(v)) + .5; ctx.beginPath(); ctx.moveTo(px, pad.t); ctx.lineTo(px, pad.t + ph); ctx.stroke();
+    ctx.fillText(cfg.xfmt ? cfg.xfmt(v) : minus((Math.abs(v) < xs * 1e-6 ? 0 : v).toFixed(dec(xs))), px, pad.t + ph + 6);
+  }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let v = Math.ceil(y0 / ys) * ys; v <= y1 + 1e-9 * ys; v += ys) {
+    const py = Math.round(Y(v)) + .5; ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(pad.l + pw, py); ctx.stroke();
+    ctx.fillText(cfg.yfmt ? cfg.yfmt(v) : minus((Math.abs(v) < ys * 1e-6 ? 0 : v).toFixed(dec(ys))), pad.l - 6, py);
+  }
+  if (cfg.zeroAxes !== false) {
+    ctx.strokeStyle = "rgba(231,234,240,.38)";
+    if (y0 < 0 && y1 > 0 && !cfg.noYzero) { const py = Math.round(Y(0)) + .5; ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(pad.l + pw, py); ctx.stroke(); }
+    if (x0 < 0 && x1 > 0) { const px = Math.round(X(0)) + .5; ctx.beginPath(); ctx.moveTo(px, pad.t); ctx.lineTo(px, pad.t + ph); ctx.stroke(); }
+  }
+  ctx.strokeStyle = col("rule"); ctx.strokeRect(pad.l + .5, pad.t + .5, pw - 1, ph - 1);
+  ctx.fillStyle = col("graphite"); ctx.font = 'italic 14px "Newsreader", Georgia, serif';
+  if (cfg.xlabel) { ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(cfg.xlabel, pad.l + pw - 6, pad.t + ph - 4); }
+  if (cfg.ylabel) { ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(cfg.ylabel, pad.l + 6, pad.t + 4); }
+  ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, pw, ph); ctx.clip();
+  (cfg.layers || []).forEach(L => L && L(T));
+  ctx.restore();
+  (cfg.after || []).forEach(L => L && L(T));
+  cv._T = T;
+  return T;
+}
+const Lyr = {
+  line(xs, ys, o = {}) {
+    return T => {
+      const { ctx, X, Y } = T, lo = T.y0 - 20 * (T.y1 - T.y0), hi = T.y1 + 20 * (T.y1 - T.y0);
+      ctx.save(); ctx.strokeStyle = o.color || col("chalk"); ctx.lineWidth = o.w || 1.8; ctx.setLineDash(o.dash || []); ctx.globalAlpha = o.alpha ?? 1; ctx.lineJoin = "round";
+      ctx.beginPath(); let pen = false;
+      for (let i = 0; i < xs.length; i++) {
+        const y = ys[i]; if (!isFinite(y) || !isFinite(xs[i])) { pen = false; continue; }
+        const px = X(xs[i]), py = Y(Math.max(lo, Math.min(hi, y)));
+        if (!pen) { ctx.moveTo(px, py); pen = true; } else ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.restore();
+    };
+  },
+  fn(f, o = {}) { return T => { const xs = [], ys = []; const n = o.n || 500; for (let i = 0; i <= n; i++) { const x = T.x0 + (T.x1 - T.x0) * i / n; xs.push(x); ys.push(f(x)); } Lyr.line(xs, ys, o)(T); }; },
+  hline(y, o = {}) { return T => { const { ctx, Y } = T; ctx.save(); ctx.strokeStyle = o.color || col("graphite"); ctx.lineWidth = o.w || 1; ctx.setLineDash(o.dash || [5, 4]); ctx.beginPath(); ctx.moveTo(T.pad.l, Y(y)); ctx.lineTo(T.pad.l + T.pw, Y(y)); ctx.stroke(); ctx.restore(); if (o.label) Lyr.text(T.x1, y, o.label, { color: o.color, align: "right", dy: -8, dx: -6 })(T); }; },
+  vline(x, o = {}) { return T => { const { ctx, X } = T; ctx.save(); ctx.strokeStyle = o.color || col("graphite"); ctx.lineWidth = o.w || 1; ctx.setLineDash(o.dash || [5, 4]); ctx.beginPath(); ctx.moveTo(X(x), T.pad.t); ctx.lineTo(X(x), T.pad.t + T.ph); ctx.stroke(); ctx.restore(); if (o.label) Lyr.text(x, T.y1, o.label, { color: o.color, align: "left", dx: 5, dy: 12 })(T); }; },
+  band(ya, yb, o = {}) { return T => { const { ctx, Y } = T; ctx.fillStyle = o.color || "rgba(127,224,176,.08)"; ctx.fillRect(T.pad.l, Y(yb), T.pw, Y(ya) - Y(yb)); }; },
+  pole(x, y, o = {}) { return T => { const { ctx } = T, px = T.X(x), py = T.Y(y), s = o.size || 7; ctx.save(); ctx.strokeStyle = o.color || col("coral"); ctx.lineWidth = o.w || 2.4; ctx.globalAlpha = o.alpha ?? 1; ctx.beginPath(); ctx.moveTo(px - s, py - s); ctx.lineTo(px + s, py + s); ctx.moveTo(px - s, py + s); ctx.lineTo(px + s, py - s); ctx.stroke(); ctx.restore(); }; },
+  zero(x, y, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.globalAlpha = o.alpha ?? 1; ctx.beginPath(); ctx.arc(T.X(x), T.Y(y), o.size || 6.5, 0, 7); ctx.fillStyle = col("ink-2"); ctx.fill(); ctx.strokeStyle = o.color || col("sky"); ctx.lineWidth = o.w || 2.2; ctx.stroke(); ctx.restore(); }; },
+  dot(x, y, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.beginPath(); ctx.arc(T.X(x), T.Y(y), o.r || 5, 0, 7); ctx.fillStyle = o.color || col("amber"); ctx.fill(); if (o.ring !== false) { ctx.lineWidth = 2; ctx.strokeStyle = col("ink"); ctx.stroke(); } ctx.restore(); }; },
+  text(x, y, s, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.font = o.font || FONT_UI; ctx.fillStyle = o.color || col("graphite"); ctx.textAlign = o.align || "left"; ctx.textBaseline = o.base || "middle"; ctx.fillText(s, T.X(x) + (o.dx || 0), T.Y(y) + (o.dy || 0)); ctx.restore(); }; },
+};
+/* keep canvases crisp and redrawn when they become visible / resize */
+const _ro = ("ResizeObserver" in window) ? new ResizeObserver(es => es.forEach(e => e.target._redraw && e.target._redraw())) : null;
+function livePlot(cv, drawFn) { cv._redraw = drawFn; if (_ro) _ro.observe(cv); drawFn(); return cv; }
+window.addEventListener("tabshown", () => $$(".panel.active canvas").forEach(c => c._redraw && c._redraw()));
+function onHover(cv, cb) {
+  const h = e => { const T = cv._T; if (!T) return; const r = cv.getBoundingClientRect(); const px = e.clientX - r.left, py = e.clientY - r.top; if (px < T.pad.l || px > T.pad.l + T.pw || py < T.pad.t || py > T.pad.t + T.ph) { cb(null); return; } cb(T.inv(px, py), px, py); };
+  cv.addEventListener("pointermove", h); cv.addEventListener("pointerleave", () => cb(null));
+}
+
+/* ---------------- MathJax helpers ---------------- */
+function typeset(el) {
+  const MJ = window.MathJax;
+  if (MJ && MJ.typesetPromise && MJ.startup && MJ.startup.promise) {
+    MJ.startup.promise = MJ.startup.promise.then(() => { if (MJ.typesetClear) MJ.typesetClear([el]); return MJ.typesetPromise([el]); }).catch(() => {});
+  }
+}
+function setTeX(el, tex, display = false) { el.textContent = display ? `\\[${tex}\\]` : `\\(${tex}\\)`; typeset(el); }
+
+/* ---------------- SVG block diagrams ---------------- */
+function cw(c) {
+  if (/[0-9]/.test(c)) return .5;
+  if (/[a-z]/.test(c)) return ({ m: .72, w: .66, i: .29, j: .29, l: .29, t: .31, f: .31, r: .39, s: .40 })[c] || .48;
+  if (/[A-Z]/.test(c)) return ({ G: .72, M: .86, W: .9, I: .36 })[c] || .65;
+  if (c === " ") return .26;
+  if ("+−=".includes(c)) return .58;
+  if ("()[]".includes(c)) return .34;
+  return .3;
+}
+function parseMarkup(str) {
+  const out = []; let i = 0;
+  const push = (t, sh) => { for (const ch of t) { const it = /[A-Za-z]/.test(ch); const last = out[out.length - 1]; if (last && last.it === it && last.sh === sh) last.t += ch; else out.push({ t: ch, it, sh }); } };
+  while (i < str.length) {
+    const c = str[i];
+    if (c === "^" || c === "_") {
+      const sh = c === "^" ? 1 : -1; i++; let g;
+      if (str[i] === "{") { const j = str.indexOf("}", i); g = str.slice(i + 1, j); i = j + 1; } else { g = str[i]; i++; }
+      push(g.replace(/-/g, "−"), sh);
+    } else { push(c === "-" ? "−" : c, 0); i++; }
+  }
+  return out;
+}
+function mwidth(str, fs = 17) { return parseMarkup(str).reduce((w, p) => w + [...p.t].reduce((a, c) => a + cw(c), 0) * (p.sh ? .72 : 1), 0) * fs; }
+function mtspans(str) {
+  let cur = 0, out = "";
+  for (const p of parseMarkup(str)) {
+    const tg = p.sh === 1 ? -7 : p.sh === -1 ? 4 : 0, dy = tg - cur; cur = tg;
+    out += `<tspan${dy ? ` dy="${dy}"` : ""}${p.sh ? ' font-size="0.72em"' : ""}${p.it ? ' font-style="italic"' : ""}>${esc(p.t)}</tspan>`;
+  }
+  if (cur) out += `<tspan dy="${-cur}"> </tspan>`;
+  return out;
+}
+const F = (n, d) => ({ n, d });
+function lmeasure(L, fs = 17) {
+  if (typeof L === "string") return { w: mwidth(L, fs), frac: false };
+  if (Array.isArray(L)) { let w = 0, fr = false; for (const x of L) { const m = lmeasure(x, fs); w += m.w; fr = fr || m.frac; } return { w, frac: fr }; }
+  return { w: Math.max(mwidth(L.n, fs), mwidth(L.d, fs)) + 8, frac: true };
+}
+function lrender(L, cx, cy, cls = "bd-t", fs = 17) {
+  if (typeof L === "string") return `<text x="${cx}" y="${cy + fs * .34}" text-anchor="middle" class="${cls}">${mtspans(L)}</text>`;
+  if (Array.isArray(L)) { const tot = lmeasure(L, fs).w; let x = cx - tot / 2, s = ""; for (const it of L) { const m = lmeasure(it, fs); s += lrender(it, x + m.w / 2, cy, cls, fs); x += m.w; } return s; }
+  const m = lmeasure(L, fs);
+  return `<text x="${cx}" y="${cy - 5}" text-anchor="middle" class="${cls}">${mtspans(L.n)}</text><line class="bd-frac" x1="${cx - m.w / 2 + 1}" y1="${cy}" x2="${cx + m.w / 2 - 1}" y2="${cy}"/><text x="${cx}" y="${cy + 17}" text-anchor="middle" class="${cls}">${mtspans(L.d)}</text>`;
+}
+class BD {
+  constructor(w, h) { this.w = w; this.h = h; this.s = ""; }
+  _a(o) { const c = []; if (o.hl) c.push("hl-" + o.hl); if (o.dim) c.push("dim"); return { c: c.join(" "), t: o.tags ? ` data-tags="${o.tags}"` : "" }; }
+  block(x, y, L, o = {}) {
+    const m = lmeasure(L), w = o.w || Math.max(44, Math.round(m.w + 26)), h = o.h || (m.frac ? 58 : 40), a = this._a(o);
+    this.s += `<g class="bd-block ${a.c}"${a.t}><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="2"/>${lrender(L, x, y)}</g>`;
+    return { x, y, w, h, l: [x - w / 2, y], r: [x + w / 2, y], t: [x, y - h / 2], b: [x, y + h / 2] };
+  }
+  sum(x, y, signs = {}, o = {}) {
+    const r = 13, k = r * .7071, a = this._a(o);
+    let s = `<g class="bd-sum ${a.c}"${a.t}><circle cx="${x}" cy="${y}" r="${r}"/><line x1="${x - k}" y1="${y - k}" x2="${x + k}" y2="${y + k}"/><line x1="${x - k}" y1="${y + k}" x2="${x + k}" y2="${y - k}"/>`;
+    const pos = { l: [x - r - 3, y - 7, "end"], t: [x + 6, y - r - 3, "start"], b: [x - 6, y + r + 14, "end"], r: [x + r + 4, y - 7, "start"], br: [x + r + 3, y + r + 9, "start"], tr: [x + r + 3, y - r - 2, "start"] };
+    for (const [kk, v] of Object.entries(signs)) { const p = pos[kk]; s += `<text class="bd-sign" x="${p[0]}" y="${p[1]}" text-anchor="${p[2]}">${v === "-" ? "−" : v}</text>`; }
+    this.s += s + "</g>";
+    return { x, y, l: [x - r, y], r: [x + r, y], t: [x, y - r], b: [x, y + r], br: [x + k, y + k], tr: [x + k, y - k] };
+  }
+  wire(pts, o = {}) {
+    const a = this._a(o); pts = pts.map(p => p.slice());
+    if (o.arrow !== false) {
+      const [x2, y2] = pts[pts.length - 1], [x1, y1] = pts[pts.length - 2];
+      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9.5, W = 4.4;
+      const bx = x2 - L * Math.cos(ang), by = y2 - L * Math.sin(ang), px = -Math.sin(ang) * W, py = Math.cos(ang) * W;
+      pts[pts.length - 1] = [x2 - 6 * Math.cos(ang), y2 - 6 * Math.sin(ang)];
+      this.s += `<polyline class="bd-wire ${a.c}"${a.t} points="${pts.map(p => p.join(",")).join(" ")}"/>`;
+      this.s += `<polygon class="bd-head ${a.c}"${a.t} points="${x2},${y2} ${bx + px},${by + py} ${bx - px},${by - py}"/>`;
+    } else this.s += `<polyline class="bd-wire ${a.c}"${a.t} points="${pts.map(p => p.join(",")).join(" ")}"/>`;
+  }
+  dot(p, o = {}) { const a = this._a(o); this.s += `<circle class="bd-dot ${a.c}"${a.t} cx="${p[0]}" cy="${p[1]}" r="3.6"/>`; }
+  sig(x, y, L, o = {}) { this.s += `<g class="${this._a(o).c}">${lrender(L, x, y, "bd-sig", 16)}</g>`; }
+  note(x, y, str, anchor = "middle") { this.s += `<text class="note" x="${x}" y="${y}" text-anchor="${anchor}">${esc(str)}</text>`; }
+  svg(extra = "") { return `<svg class="bd ${extra}" viewBox="0 0 ${this.w} ${this.h}" style="max-width:${Math.round(this.w * 1.3)}px" role="img" aria-label="Block diagram">${this.s}</svg>`; }
+}
+/* unity-feedback loop helper */
+function bdLoop(G, o = {}) {
+  const d = new BD(o.w || 560, o.h || 170), y = 60;
+  d.sig(34, y - 20, "R(s)");
+  const s = d.sum(92, y, { l: "+", b: "-" }, { hl: o.hlLoop });
+  d.wire([[14, y], s.l]);
+  const b = d.block(o.bx || 250, y, G, { hl: o.hl, w: o.bw });
+  d.wire([s.r, b.l], { hl: o.hlLoop });
+  const px = o.px || (b.r[0] + 60); d.wire([b.r, [px, y]], { arrow: false, hl: o.hlLoop }); d.dot([px, y], { hl: o.hlLoop });
+  d.wire([[px, y], [d.w - 14, y]]); d.sig(d.w - 44, y - 20, "C(s)");
+  if (o.E) d.sig((s.r[0] + b.l[0]) / 2, y - 18, "E(s)");
+  d.wire([[px, y], [px, y + 72], [92, y + 72], s.b], { hl: o.hlLoop });
+  return d.svg();
+}
+function bdSingle(L, o = {}) {
+  const d = new BD(o.w || 560, o.h || 110), y = 55;
+  d.sig(34, y - 20, "R(s)");
+  const b = d.block(d.w / 2, y, L, { hl: o.hl || "a", w: o.bw });
+  d.wire([[14, y], b.l]); d.wire([b.r, [d.w - 14, y]]); d.sig(d.w - 44, y - 20, "C(s)");
+  return d.svg();
+}
+
+/* ---------------- visual registry, stepper, tabs ---------------- */
+const VIS = {};
+const STEPPERS = [];
+function initStepper(root, opts = {}) {
+  const steps = $$(":scope > .step-body > .step", root);
+  const nav = $(".steps-nav", root), visHost = $(".step-vis", root);
+  steps.forEach((s, i) => {
+    const b = document.createElement("button"); b.className = "pill"; b.type = "button";
+    b.innerHTML = `<span class="k">${i + 1}</span>${s.dataset.title}`; b.onclick = () => go(i); nav.appendChild(b);
+    const h = document.createElement("h4"); h.innerHTML = `<span class="sn">${i + 1}</span>${s.dataset.title}`; s.prepend(h);
+  });
+  const cache = {};
+  if (visHost) steps.forEach(s => {
+    const id = s.dataset.vis; if (!id || cache[id]) return;
+    const d = document.createElement("div"); d.className = "vis"; visHost.appendChild(d); cache[id] = d;
+    const v = VIS[id]; if (typeof v === "function") { const r = v(d); if (typeof r === "string") d.innerHTML = r; }
+    if (s.dataset.cap) d.insertAdjacentHTML("beforeend", `<div class="caption">${s.dataset.cap}</div>`);
+  });
+  const ctl = document.createElement("div"); ctl.className = "step-ctl";
+  ctl.innerHTML = `<button class="btn ghost prev" type="button">Previous step</button><button class="btn primary next" type="button">Next step</button><span class="src cnt"></span><span style="flex:1"></span><label class="chk"><input type="checkbox" class="allc"> Show all steps as one page</label>`;
+  root.appendChild(ctl);
+  let cur = 0;
+  const pills = $$(".pill", nav);
+  function go(i) {
+    cur = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach((s, j) => s.classList.toggle("on", j === cur));
+    pills.forEach((p, j) => { p.classList.toggle("on", j === cur); p.classList.toggle("done", j < cur); });
+    if (visHost) { Object.values(cache).forEach(v => v.classList.remove("on")); let j = cur; while (j >= 0 && !steps[j].dataset.vis) j--; if (j >= 0) cache[steps[j].dataset.vis].classList.add("on"); }
+    $(".prev", ctl).disabled = cur === 0; $(".next", ctl).disabled = cur === steps.length - 1;
+    $(".cnt", ctl).textContent = `Step ${cur + 1} of ${steps.length}`;
+    if (opts.onStep) opts.onStep(steps[cur], cur);
+    ACTIVE_STEPPER = api;
+    requestAnimationFrame(() => $$("canvas", visHost || root).forEach(c => c._redraw && c._redraw()));
+  }
+  $(".prev", ctl).onclick = () => go(cur - 1);
+  $(".next", ctl).onclick = () => go(cur + 1);
+  $(".allc", ctl).onchange = e => root.classList.toggle("all", e.target.checked);
+  const api = { go, root, get cur() { return cur; } };
+  root.addEventListener("pointerdown", () => { ACTIVE_STEPPER = api; });
+  STEPPERS.push(api); go(0);
+  return api;
+}
+let ACTIVE_STEPPER = null;
+document.addEventListener("keydown", e => {
+  if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName)) return;
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  let st = ACTIVE_STEPPER;
+  if (!st || !st.root.closest(".panel.active") || st.root.offsetParent === null) st = STEPPERS.find(s => s.root.closest(".panel.active") && s.root.offsetParent !== null);
+  if (!st) return;
+  st.go(st.cur + (e.key === "ArrowRight" ? 1 : -1)); e.preventDefault();
+});
+function initTabs() {
+  const tabs = $$(".tab"), panels = $$(".panel");
+  function show(id, setHash) {
+    tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.for === id)));
+    panels.forEach(p => p.classList.toggle("active", p.id === id));
+    if (setHash) { try { history.replaceState(null, "", "#show-" + id); } catch (e) {} }
+    window.dispatchEvent(new Event("tabshown"));
+  }
+  tabs.forEach(t => t.addEventListener("click", () => {
+    show(t.dataset.for, true);
+    const bar = $(".tabbar"); if (window.scrollY > bar.offsetTop) window.scrollTo({ top: bar.offsetTop });
+  }));
+  const h = location.hash.replace("#show-", "");
+  show(panels.some(p => p.id === h) ? h : panels[0].id, false);
+}
+
+/* ---------------- root-locus widget ---------------- */
+class RootLocus {
+  constructor(host, o) {
+    this.o = Object.assign({ Kmin: 1e-4, Kmax: 1e5, Ks: [0.01, 1000], K0: 1, drag: false, step: false }, o);
+    this.layers = { pz: 1, seg: 1, asym: 1, brk: 1, ang: 1, locus: 1, dots: 1, cross: 1 };
+    this.host = host; this.K = this.o.K0; this.hover = null; this.onK = [];
+    host.innerHTML = `
+      <div class="plotbox"><div class="pt"><span class="ttl">s-plane · root locus</span><span class="legend">
+        <span><svg width="12" height="12"><path d="M2 2L10 10M2 10L10 2" stroke="${col("coral")}" stroke-width="2.2"/></svg>open-loop pole</span>
+        <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.3" fill="none" stroke="${col("sky")}" stroke-width="2"/></svg>zero</span>
+        <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="${col("amber")}"/></svg>closed-loop pole at K</span></span></div>
+        <canvas class="tall"></canvas></div>
+      <div class="rl-ctl"><button class="btn ghost play" type="button">Sweep K</button><span class="kval"></span>
+        <input type="range" min="0" max="1000" step="1" aria-label="Gain K"><input type="number" class="kin" step="any" min="0" aria-label="Type a value of K"></div>
+      <div class="rl-hover"></div>
+      <div class="rl-read"></div>
+      ${this.o.step ? `<div class="plotbox" style="margin-top:12px"><div class="pt"><span>Closed-loop step response at this K</span><span class="stat"></span></div><canvas class="short"></canvas></div>` : ""}`;
+    this.cv = $("canvas.tall", host); this.sl = $("input[type=range]", host); this.kin = $(".kin", host);
+    this.sl.addEventListener("input", () => this.setK(this.v2K(+this.sl.value), "slider"));
+    this.kin.addEventListener("change", () => { const v = parseFloat(this.kin.value); if (isFinite(v) && v >= 0) this.setK(v, "input"); });
+    $(".play", host).addEventListener("click", () => this.sweep());
+    livePlot(this.cv, () => this.draw());
+    if (this.o.step) { this.cvs = $("canvas.short", host); livePlot(this.cvs, () => this.drawStep()); }
+    onHover(this.cv, (p) => { this.hover = p; this.hoverText(); if (!this._dragging) this.draw(); });
+    if (this.o.drag) this.enableDrag();
+    this.setSystem(this.o.poles, this.o.zeros, this.o.view);
+  }
+  v2K(v) { const [a, b] = this.o.Ks; return v <= 0 ? 0 : a * Math.pow(b / a, (v - 1) / 999); }
+  K2v(K) { const [a, b] = this.o.Ks; if (K <= 0) return 0; return Math.max(1, Math.min(1000, 1 + 999 * Math.log(K / a) / Math.log(b / a))); }
+  setSystem(poles, zeros, view, opts = {}) {
+    this.P = poles.map(p => ({ re: p[0], im: Math.abs(p[1] || 0) }));
+    this.Z = zeros.map(p => ({ re: p[0], im: Math.abs(p[1] || 0) }));
+    this.fixedView = view ? { x: view.x.slice(), y: view.y.slice() } : null;
+    if (opts.Ks) this.o.Ks = opts.Ks;
+    if (opts.K0 != null) this.K = opts.K0;
+    this.recalc(); this.setK(this.K, "sys");
+  }
+  expand(items) { const r = []; for (const it of items) { r.push([it.re, it.im]); if (it.im > 1e-12) r.push([it.re, -it.im]); } return r; }
+  recalc() {
+    this.pr = this.expand(this.P); this.zr = this.expand(this.Z);
+    this.D = Poly.fromRoots(this.pr); this.N = Poly.fromRoots(this.zr);
+    this.n = this.pr.length; this.m = this.zr.length;
+    this.keypoints();
+    this.view = this.fixedView || this.autoView();
+    this.locus(); this.crossings();
+  }
+  charPoly(K) { return Poly.add(this.D, Poly.scale(this.N, K)); }
+  Kat(s) { const d = Poly.evalC(this.D, s), n = Poly.evalC(this.N, s); return Cx.abs(d) / Cx.abs(n); }
+  keypoints() {
+    const D = this.D, N = this.N, n = this.n, m = this.m;
+    const Q = Poly.add(Poly.mul(Poly.deriv(D), N), Poly.scale(Poly.mul(D, Poly.deriv(N)), -1));
+    const KofS = x => { const nn = Poly.evalR(N, x); return Math.abs(nn) < 1e-12 ? Infinity : -Poly.evalR(D, x) / nn; };
+    this.KofS = KofS;
+    this.brk = [];
+    if (Poly.trim(Q).length > 1) for (const x of Poly.realRoots(Q, 1e-5)) {
+      const K = KofS(x); if (!(K > 1e-9) || !isFinite(K)) continue;
+      const h = 1e-4 * (1 + Math.abs(x)), a = KofS(x - h), b = KofS(x + h);
+      const type = (K > a && K > b) ? "breakaway" : (K < a && K < b) ? "break-in" : "break point";
+      if (!this.brk.some(q => Math.abs(q.s - x) < 1e-6)) this.brk.push({ s: x, K, type });
+    }
+    this.asym = null;
+    if (n > m) {
+      const sp = this.pr.reduce((a, z) => a + z[0], 0), sz = this.zr.reduce((a, z) => a + z[0], 0);
+      const q = n - m; this.asym = { c: (sp - sz) / q, ang: [...Array(q).keys()].map(k => (2 * k + 1) * Math.PI / q) };
+    }
+    const deg = r => r * 180 / Math.PI, norm = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
+    this.angles = [];
+    for (const it of this.P) if (it.im > 1e-9) {
+      const p = [it.re, it.im]; let a = 180; let dup = false;
+      this.pr.forEach(q => { if (q === undefined) return; const d = Cx.sub(p, q); if (Cx.abs(d) < 1e-9) return; a -= deg(Cx.arg(d)); });
+      this.zr.forEach(z => { const d = Cx.sub(p, z); if (Cx.abs(d) < 1e-9) { dup = true; return; } a += deg(Cx.arg(d)); });
+      if (!dup) this.angles.push({ at: p, kind: "departure", ang: norm(a) });
+    }
+    for (const it of this.Z) if (it.im > 1e-9) {
+      const z = [it.re, it.im]; let a = 180;
+      this.pr.forEach(p => { a += deg(Cx.arg(Cx.sub(z, p))); });
+      this.zr.forEach(q => { const d = Cx.sub(z, q); if (Cx.abs(d) < 1e-9) return; a -= deg(Cx.arg(d)); });
+      this.angles.push({ at: z, kind: "arrival", ang: norm(a) });
+    }
+  }
+  autoView() {
+    const xs = [0], ys = [0];
+    [...this.pr, ...this.zr].forEach(z => { xs.push(z[0]); ys.push(Math.abs(z[1])); });
+    this.brk.forEach(b => xs.push(b.s));
+    const xmin = Math.min(...xs), xmax = Math.max(...xs), ym = Math.max(...ys);
+    const span = Math.max(xmax - xmin, 2 * ym, 2), pad = .35 * span + .6;
+    return { x: [xmin - pad, xmax + pad], y: [-(ym + pad), ym + pad] };
+  }
+  locus() {
+    const vw = this.view, span = Math.max(vw.x[1] - vw.x[0], vw.y[1] - vw.y[0]), tol = span * .01;
+    const cx = (vw.x[0] + vw.x[1]) / 2, cy = 0, far = span * 3;
+    const inView = z => Math.abs(z[0] - cx) < far && Math.abs(z[1] - cy) < far;
+    const deg = Poly.trim(this.charPoly(1)).length - 1;
+    const solve = (K, g) => matchRoots(g, Poly.roots(this.charPoly(K), g));
+    const br = Array.from({ length: deg }, () => []), Kl = [];
+    const push = (K, r) => { Kl.push(K); r.forEach((z, i) => br[i].push(z)); };
+    let prev = this.pr.map(p => p.slice());
+    if (prev.length !== deg) prev = Poly.roots(this.charPoly(this.o.Kmin));
+    push(0, prev);
+    const rec = (Ka, ra, Kb, rb, depth) => {
+      let md = 0;
+      for (let i = 0; i < ra.length; i++) if (inView(ra[i]) || inView(rb[i])) md = Math.max(md, Math.hypot(ra[i][0] - rb[i][0], ra[i][1] - rb[i][1]));
+      if (md > tol && depth < 8 && budget-- > 0) {
+        const Km = Ka > 0 ? Math.sqrt(Ka * Kb) : Kb / 8, rm = solve(Km, ra);
+        rec(Ka, ra, Km, rm, depth + 1); push(Km, rm); rec(Km, rm, Kb, rb, depth + 1);
+      }
+    };
+    const NS = 360, a = this.o.Kmin, b = this.o.Kmax;
+    let Kp = 0, budget = 6000;
+    for (let k = 0; k <= NS; k++) {
+      const K = a * Math.pow(b / a, k / NS), rb = solve(K, prev);
+      rec(Kp, prev, K, rb, 0); push(K, rb); prev = rb; Kp = K;
+    }
+    this.branches = br; this.Klist = Kl;
+  }
+  crossings() {
+    this.cross = []; this.onAxis = false;
+    const br = this.branches, Kl = this.Klist, eps = 1e-7;
+    let axisCount = 0, total = 0;
+    br.forEach((b, i) => {
+      let last = Math.abs(b[0][0]) > eps ? 0 : -1;
+      for (let j = 1; j < b.length; j++) {
+        total++; if (Math.abs(b[j][0]) < 1e-6 && Math.abs(b[j][1]) > 1e-6) axisCount++;
+        if (Math.abs(b[j][0]) <= eps) continue;
+        if (last < 0) { last = j; continue; }
+        const jl = last; last = j;
+        const ra = b[jl][0], rb = b[j][0];
+        if ((ra < -eps && rb > eps) || (ra > eps && rb < -eps)) {
+          let Ka = Kl[jl], Kb = Kl[j], setA = br.map(x => x[jl]);
+          let s = null;
+          for (let it = 0; it < 50; it++) {
+            const Km = (Ka + Kb) / 2, rm = matchRoots(setA, Poly.roots(this.charPoly(Km), setA));
+            if (Math.sign(rm[i][0]) === Math.sign(ra)) { Ka = Km; setA = rm; } else Kb = Km;
+            s = rm[i];
+          }
+          const K = (Ka + Kb) / 2, w = Math.abs(s[1]);
+          if (!this.cross.some(c => Math.abs(c.K - K) < 1e-6 * (1 + K) && Math.abs(c.w - w) < 1e-4)) this.cross.push({ K, w, dir: rb > ra ? "into RHP" : "into LHP" });
+        }
+      }
+    });
+    this.onAxis = total > 0 && axisCount / total > .5;
+  }
+  setLayers(obj) { this.layers = Object.assign({ pz: 1, seg: 0, asym: 0, brk: 0, ang: 0, locus: 0, dots: 0, cross: 0 }, obj); this.draw(); this.readout(); }
+  setK(K, src) {
+    this.K = Math.max(0, K);
+    this.cl = this.K === 0 ? this.pr.map(p => p.slice()) : Poly.roots(this.charPoly(this.K));
+    if (src !== "slider") this.sl.value = this.K2v(this.K);
+    if (src !== "input") this.kin.value = +this.K.toPrecision(4);
+    $(".kval", this.host).textContent = "K = " + fmt(this.K, this.K < 1 ? 4 : 3);
+    this.draw(); this.readout(); if (this.o.step) this.drawStep();
+    this.onK.forEach(f => f(this.K, this));
+  }
+  status() {
+    const mx = Math.max(...this.cl.map(z => z[0]));
+    if (this.K === 0) return { t: "open loop (K = 0)", c: "mid" };
+    if (mx < -1e-7) return { t: "stable", c: "ok" };
+    if (mx <= 1e-6) return { t: "marginally stable", c: "mid" };
+    return { t: "unstable", c: "bad" };
+  }
+  readout() {
+    const st = this.status(), L = this.layers;
+    const cl = this.cl.filter(z => z[1] >= -1e-9).sort((a, b) => b[0] - a[0]).map(z => { const t = fmtC(z, 3); return Math.abs(z[1]) > 1e-9 ? (Math.abs(z[0]) < 5e-4 ? "±j" + fmt(Math.abs(z[1]), 3) : t.replace("+ j", "± j")) : t; }).join(", ");
+    let h = `<div>Closed-loop poles<br><b>${cl || "—"}</b></div><div>Status<br><span class="badge ${st.c}">${st.t}</span></div>`;
+    if (L.brk && this.brk.length) h += `<div>Break points<br><b>${this.brk.map(b => `${b.type} σ = ${fmt(b.s, 3)} (K = ${fmt(b.K, 3)})`).join("<br>")}</b></div>`;
+    if (L.cross && this.cross.length) h += `<div>jω-axis crossings<br><b>${this.cross.map(c => c.w < 1e-4 ? `s = 0 at K = ${fmt(c.K, 3)}` : `s = ±j${fmt(c.w, 3)} at K = ${fmt(c.K, 3)}`).join("<br>")}</b></div>`;
+    if (L.asym && this.asym) h += `<div>Asymptotes<br><b>σ<sub>a</sub> = ${fmt(this.asym.c, 3)}, θ = ${this.asym.ang.map(a => fmt(a * 180 / Math.PI, 1) + "°").join(", ")}</b></div>`;
+    if (L.ang && this.angles.length) h += `<div>Departure / arrival<br><b>${this.angles.map(a => `${a.kind} at ${fmtC(a.at, 2)}: ${fmt(a.ang, 1)}°`).join("<br>")}</b></div>`;
+    $(".rl-read", this.host).innerHTML = h;
+  }
+  hoverText() {
+    const el = $(".rl-hover", this.host);
+    if (!this.hover) { el.textContent = this.o.drag ? "Drag a pole or zero to move it. Hover anywhere to test the angle condition." : "Hover over the s-plane to test the angle condition ∠G(s) = ±180°."; return; }
+    const s = this.hover, n = Poly.evalC(this.N, s), d = Poly.evalC(this.D, s);
+    let ang = (Cx.arg(n) - Cx.arg(d)) * 180 / Math.PI; ang = ((ang + 180) % 360 + 360) % 360 - 180;
+    const on = Math.abs(Math.abs(ang) - 180) < 2.5;
+    el.innerHTML = `s = ${fmtC(s, 2)} &nbsp; ∠G(s) = ${fmt(ang, 1)}° &nbsp; K = |D(s)|/|N(s)| = ${fmt(Cx.abs(d) / Cx.abs(n), 3)} ${on ? '&nbsp;<span class="badge ok">on the locus</span>' : ""}`;
+  }
+  draw() {
+    if (!this.branches) return;
+    const L = this.layers, self = this;
+    drawPlot(this.cv, {
+      xlim: this.view.x, ylim: this.view.y, equal: true, xlabel: "σ", ylabel: "jω", layers: [
+        L.seg && (T => {
+          const reals = [...this.pr, ...this.zr].filter(z => Math.abs(z[1]) < 1e-9).map(z => z[0]).sort((a, b) => a - b);
+          const pts = [T.x0 - 1e3, ...reals, T.x1 + 1e3]; const { ctx } = T;
+          ctx.save(); ctx.strokeStyle = rgba(col("amber"), .45); ctx.lineWidth = 9; ctx.lineCap = "butt";
+          for (let i = 0; i < pts.length - 1; i++) {
+            const mid = (pts[i] + pts[i + 1]) / 2, cnt = reals.filter(r => r > mid).length;
+            if (cnt % 2 === 1 && pts[i + 1] - pts[i] > 1e-9) { ctx.beginPath(); ctx.moveTo(T.X(pts[i]), T.Y(0)); ctx.lineTo(T.X(pts[i + 1]), T.Y(0)); ctx.stroke(); }
+          }
+          ctx.restore();
+        }),
+        L.asym && this.asym && (T => {
+          const { ctx } = T, a = this.asym, R = 4 * Math.max(T.x1 - T.x0, T.y1 - T.y0);
+          ctx.save(); ctx.strokeStyle = col("graphite"); ctx.setLineDash([6, 5]); ctx.lineWidth = 1.2;
+          a.ang.forEach(t => { ctx.beginPath(); ctx.moveTo(T.X(a.c), T.Y(0)); ctx.lineTo(T.X(a.c + R * Math.cos(t)), T.Y(R * Math.sin(t))); ctx.stroke(); });
+          ctx.setLineDash([]); ctx.fillStyle = col("graphite"); ctx.beginPath(); ctx.arc(T.X(a.c), T.Y(0), 3.5, 0, 7); ctx.fill(); ctx.restore();
+          Lyr.text(a.c, 0, "σa = " + fmt(a.c, 2), { dy: -12, align: "center" })(T);
+        }),
+        L.locus && (T => {
+          const { ctx } = T;
+          this.branches.forEach(b => {
+            Lyr.line(b.map(z => z[0]), b.map(z => z[1]), { color: col("chalk"), w: 2 })(T);
+            let len = 0; const segs = [];
+            for (let j = 1; j < b.length; j++) { const inv = [b[j], b[j - 1]].every(z => z[0] > T.x0 && z[0] < T.x1 && z[1] > T.y0 && z[1] < T.y1); const l = inv ? Math.hypot(T.X(b[j][0]) - T.X(b[j - 1][0]), T.Y(b[j][1]) - T.Y(b[j - 1][1])) : 0; segs.push(l); len += l; }
+            if (len < 30) return;
+            let acc = 0, target = len * .45;
+            for (let j = 1; j < b.length; j++) {
+              acc += segs[j - 1];
+              if (acc >= target && segs[j - 1] > 0) {
+                const x2 = T.X(b[j][0]), y2 = T.Y(b[j][1]); let k = j - 1; while (k > 0 && Math.hypot(T.X(b[k][0]) - x2, T.Y(b[k][1]) - y2) < 6) k--;
+                const ang = Math.atan2(y2 - T.Y(b[k][1]), x2 - T.X(b[k][0]));
+                ctx.save(); ctx.fillStyle = col("chalk"); ctx.translate(x2, y2); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-6, -5.5); ctx.lineTo(-6, 5.5); ctx.closePath(); ctx.fill(); ctx.restore();
+                break;
+              }
+            }
+          });
+        }),
+        L.ang && (T => {
+          const { ctx } = T, Lp = 44;
+          this.angles.forEach(a => {
+            const th = a.ang * Math.PI / 180, x = T.X(a.at[0]), y = T.Y(a.at[1]);
+            const dx = Math.cos(th), dy = -Math.sin(th);
+            const [sx, sy, ex, ey] = a.kind === "departure" ? [x + dx * 10, y + dy * 10, x + dx * Lp, y + dy * Lp] : [x + dx * Lp, y + dy * Lp, x + dx * 10, y + dy * 10];
+            ctx.save(); ctx.strokeStyle = col("sky"); ctx.fillStyle = col("sky"); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+            const an = Math.atan2(ey - sy, ex - sx); ctx.translate(ex, ey); ctx.rotate(an); ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-6, -4.5); ctx.lineTo(-6, 4.5); ctx.fill(); ctx.restore();
+            ctx.save(); ctx.font = FONT_UI; ctx.fillStyle = col("sky"); ctx.textAlign = "left"; ctx.fillText((a.kind === "departure" ? "θd = " : "θa = ") + fmt(a.ang, 1) + "°", x + 12, y + (a.at[1] >= 0 ? -12 : 16)); ctx.restore();
+            // mirror image for the conjugate
+            const y2 = T.Y(-a.at[1]), dy2 = -dy;
+            const [s2x, s2y, e2x, e2y] = a.kind === "departure" ? [x + dx * 10, y2 + dy2 * 10, x + dx * Lp, y2 + dy2 * Lp] : [x + dx * Lp, y2 + dy2 * Lp, x + dx * 10, y2 + dy2 * 10];
+            ctx.save(); ctx.strokeStyle = rgba(col("sky"), .6); ctx.fillStyle = rgba(col("sky"), .6); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s2x, s2y); ctx.lineTo(e2x, e2y); ctx.stroke();
+            const an2 = Math.atan2(e2y - s2y, e2x - s2x); ctx.translate(e2x, e2y); ctx.rotate(an2); ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-6, -4.5); ctx.lineTo(-6, 4.5); ctx.fill(); ctx.restore();
+          });
+        }),
+        L.brk && (T => {
+          const { ctx } = T;
+          this.brk.forEach(b => {
+            const x = T.X(b.s), y = T.Y(0);
+            ctx.save(); ctx.fillStyle = col("violet"); ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x + 7, y); ctx.lineTo(x, y + 7); ctx.lineTo(x - 7, y); ctx.closePath(); ctx.fill(); ctx.restore();
+            Lyr.text(b.s, 0, b.type, { color: col("violet"), align: "left", dx: 7, dy: 19 })(T); Lyr.text(b.s, 0, fmt(b.s, 3), { color: col("violet"), align: "left", dx: 7, dy: 32 })(T);
+          });
+        }),
+        L.cross && (T => {
+          this.cross.forEach(c => {
+            [c.w, -c.w].forEach((w, i) => { if (i && c.w < 1e-4) return; const { ctx } = T; ctx.save(); ctx.strokeStyle = col("mint"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(T.X(0), T.Y(w), 9, 0, 7); ctx.stroke(); ctx.restore(); });
+            Lyr.text(0, c.w, c.w < 1e-4 ? `K = ${fmt(c.K, 3)}` : `±j${fmt(c.w, 3)}, K = ${fmt(c.K, 3)}`, { color: col("mint"), dx: c.w < 1e-4 ? -10 : 13, dy: c.w < 1e-4 ? -14 : -10, align: c.w < 1e-4 ? "right" : "left" })(T);
+          });
+        }),
+        T => { this.pr.forEach(p => Lyr.pole(p[0], p[1])(T)); this.zr.forEach(z => Lyr.zero(z[0], z[1])(T)); },
+        L.dots && (T => { if (this.K > 0) this.cl.forEach(z => Lyr.dot(z[0], z[1], { r: 5.5 })(T)); }),
+        T => { if (this.hover) { const { ctx } = T; ctx.save(); ctx.strokeStyle = "rgba(231,234,240,.35)"; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(T.X(this.hover[0]), T.Y(this.hover[1]), 6, 0, 7); ctx.stroke(); ctx.restore(); } },
+      ],
+    });
+  }
+  drawStep() {
+    if (!this.cvs || !this.N) return;
+    const K = this.K, stat = $(".stat", this.host);
+    if (K === 0) { drawPlot(this.cvs, { xlim: [0, 1], ylim: [-1, 1], xlabel: "t (s)", ylabel: "c(t)" }); stat.textContent = "K = 0: no feedback, output stays at 0"; return; }
+    const num = Poly.scale(this.N, K), den = this.charPoly(K);
+    const Tend = autoHorizon(den), r = stepResponse(num, den, Tend, 800);
+    const st = this.status(), yss = Poly.evalR(num, 0) / Poly.evalR(den, 0);
+    let lo = Math.min(0, ...r.y), hi = Math.max(1, ...r.y);
+    if (st.c === "bad") { lo = Math.max(lo, -4); hi = Math.min(hi, 4); }
+    const pad = (hi - lo) * .08;
+    drawPlot(this.cvs, { xlim: [0, Tend], ylim: [lo - pad, hi + pad], xlabel: "t (s)", ylabel: "c(t)", layers: [
+      st.c === "ok" && Lyr.hline(yss, { color: col("graphite"), label: "c(∞) = " + fmt(yss, 3) }),
+      Lyr.line(r.t, r.y, { color: st.c === "bad" ? col("coral") : col("amber"), w: 2 }) ] });
+    stat.textContent = st.c === "ok" ? `final value ${fmt(yss, 3)}` : st.c === "bad" ? "diverges" : "does not settle";
+  }
+  sweep() {
+    if (this._anim) { cancelAnimationFrame(this._anim); this._anim = null; return; }
+    let v = +this.sl.value >= 995 ? 0 : +this.sl.value; const t0 = performance.now(), v0 = v;
+    const tick = now => { v = v0 + (now - t0) / 6000 * 1000; if (v >= 1000) { v = 1000; this._anim = null; } this.sl.value = v; this.setK(this.v2K(v), "slider"); if (this._anim !== null && v < 1000) this._anim = requestAnimationFrame(tick); };
+    this._anim = requestAnimationFrame(tick);
+  }
+  enableDrag() {
+    const cv = this.cv; let item = null, raf = 0;
+    const pick = (px, py) => {
+      const T = cv._T; if (!T) return null; let best = null, bd = 15;
+      [...this.P.map(x => ["p", x]), ...this.Z.map(x => ["z", x])].forEach(([k, it]) => {
+        [it.im, -it.im].forEach(im => { const d = Math.hypot(T.X(it.re) - px, T.Y(im) - py); if (d < bd) { bd = d; best = it; } });
+      });
+      return best;
+    };
+    cv.addEventListener("pointerdown", e => {
+      const r = cv.getBoundingClientRect(); item = pick(e.clientX - r.left, e.clientY - r.top);
+      if (item) { cv.setPointerCapture(e.pointerId); this._dragging = true; if (!this.fixedView) this.fixedView = this.view; e.preventDefault(); }
+    });
+    cv.addEventListener("pointermove", e => {
+      const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+      if (!item) { cv.style.cursor = pick(px, py) ? "grab" : "crosshair"; return; }
+      cv.style.cursor = "grabbing";
+      const [x, y] = cv._T.inv(px, py), snap = v => Math.round(v * 20) / 20;
+      item.re = snap(x); if (item.im > 0) item.im = Math.max(.05, snap(Math.abs(y)));
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; this.recalc(); this.setK(this.K, "drag"); if (this.onChange) this.onChange(); });
+    });
+    const up = () => { if (item) { item = null; this._dragging = false; cv.style.cursor = "crosshair"; } };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  }
+}
+/* tiny pole-zero thumbnail for buttons */
+function pzThumb(poles, zeros, w = 74, h = 40) {
+  const pts = [...poles, ...zeros]; const xm = Math.max(1, ...pts.map(p => Math.abs(p[0]))), ym = Math.max(1, ...pts.map(p => Math.abs(p[1] || 0)));
+  const sx = (w / 2 - 8) / xm, sy = (h / 2 - 6) / ym, s = Math.min(sx, sy * 1.6);
+  const X = x => w / 2 + x * s, Y = y => h / 2 - y * Math.min(sy, s);
+  let g = `<line x1="2" y1="${h / 2}" x2="${w - 2}" y2="${h / 2}" stroke="${col("faint")}"/><line x1="${w / 2}" y1="2" x2="${w / 2}" y2="${h - 2}" stroke="${col("faint")}"/>`;
+  const all = (arr) => arr.flatMap(p => (p[1] ? [[p[0], p[1]], [p[0], -p[1]]] : [[p[0], 0]]));
+  all(poles).forEach(([x, y]) => { g += `<path d="M${X(x) - 3.5} ${Y(y) - 3.5}L${X(x) + 3.5} ${Y(y) + 3.5}M${X(x) - 3.5} ${Y(y) + 3.5}L${X(x) + 3.5} ${Y(y) - 3.5}" stroke="${col("coral")}" stroke-width="1.8"/>`; });
+  all(zeros).forEach(([x, y]) => { g += `<circle cx="${X(x)}" cy="${Y(y)}" r="3.3" fill="none" stroke="${col("sky")}" stroke-width="1.6"/>`; });
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${g}</svg>`;
+}
+
+"use strict";
+/* ================= Tutorial 4 — Root locus ================= */
+const LAYER_SETS = s => { const o = { pz: 1 }; (s || "").split(/\s+/).filter(Boolean).forEach(k => { if (k === "all") Object.assign(o, { seg: 1, asym: 1, brk: 1, ang: 1, locus: 1, dots: 1, cross: 1 }); else o[k] = 1; }); return o; };
+
+const CASES = {
+  ex1: [
+    { id: "a", poles: [[-2, 0], [-1, 0]], zeros: [[1, 0]], view: { x: [-4.2, 2.6], y: [-2.2, 2.2] }, K0: 1 },
+    { id: "b", poles: [[-1, 0], [0, 1]], zeros: [], view: { x: [-3.2, 2.4], y: [-3, 3] }, K0: 1 },
+    { id: "c", poles: [[0, 1]], zeros: [[-1, 0], [-2, 0]], view: { x: [-3.2, 1.4], y: [-1.9, 1.9] }, K0: 1 },
+    { id: "d", poles: [[0, 1]], zeros: [], view: { x: [-2.5, 2.5], y: [-3.6, 3.6] }, K0: 1 },
+    { id: "e", poles: [[-1, 0], [-2, 0], [-3, 0], [-4, 0]], zeros: [], view: { x: [-6.8, 1.8], y: [-4.2, 4.2] }, K0: 20 },
+    { id: "f", poles: [[1, 0], [2, 0]], zeros: [[-1, 0], [-2, 0]], view: { x: [-3.2, 3.2], y: [-2.2, 2.2] }, K0: 0.5 },
+  ],
+  ex2: [
+    { id: "a", poles: [[-4, 3]], zeros: [[-2, 0], [-6, 0]], view: { x: [-8, 1], y: [-4.2, 4.2] }, K0: 1 },
+    { id: "b", poles: [[0, 1]], zeros: [[0, 2]], view: { x: [-2.2, 2.2], y: [-2.8, 2.8] }, K0: 1 },
+    { id: "c", poles: [[0, 0], [0, 0]], zeros: [[0, 1]], view: { x: [-1.8, 1.8], y: [-1.6, 1.6] }, K0: 1 },
+  ],
+  ex4: [
+    { id: "a", poles: [[1, 0], [-2, 0], [-3, 0]], zeros: [[0, 1]], view: { x: [-6.5, 2.5], y: [-2.5, 2.5] }, K0: 10, Ks: [0.01, 1000] },
+    { id: "b", poles: [[0, 0], [-1, 0], [-2, 0]], zeros: [[1, 1]], view: { x: [-4, 2.4], y: [-2, 2] }, K0: 0.5, Ks: [0.001, 100] },
+  ],
+};
+
+function caseSwitcher(key, rl, extra) {
+  const host = $(`#cases-${key}`), cases = CASES[key];
+  const steppers = {};
+  cases.forEach(c => {
+    const el = $(`.stepper[data-case="${key}-${c.id}"]`);
+    steppers[c.id] = initStepper(el, { onStep: st => { if (el.style.display === "none") return; rl.setLayers(LAYER_SETS(st.dataset.layers)); if (st.dataset.k) rl.setK(+st.dataset.k); } });
+  });
+  host.innerHTML = cases.map(c => `<button class="btn ghost casebtn" type="button" data-id="${c.id}" aria-pressed="false" style="display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 8px"><b style="font-family:var(--serif);font-size:18px;font-weight:500">(${c.id})</b>${pzThumb(c.poles, c.zeros)}</button>`).join("")
+    + (rl.o.drag ? `<button class="btn ghost" type="button" id="reset-${key}">Reset positions</button>` : "");
+  let cur = null;
+  function show(id) {
+    const prevStep = cur ? steppers[cur].cur : 0;
+    cur = id; const c = cases.find(x => x.id === id);
+    $$(".casebtn", host).forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.id === id)); b.style.borderColor = b.dataset.id === id ? "var(--amber)" : ""; });
+    Object.entries(steppers).forEach(([k, s]) => { s.root.style.display = k === id ? "" : "none"; });
+    rl.setSystem(c.poles, c.zeros, c.view, { K0: c.K0, Ks: c.Ks || [0.01, 1000] });
+    const st = steppers[id]; st.go(Math.min(prevStep, $$(".step", st.root).length - 1));
+    if (extra) extra(c);
+  }
+  $$(".casebtn", host).forEach(b => b.addEventListener("click", () => show(b.dataset.id)));
+  if (rl.o.drag) $(`#reset-${key}`).addEventListener("click", () => { const id = cur; cur = null; show(id); });
+  show(cases[0].id);
+  return { show, get cur() { return cur; } };
+}
+
+/* K along the real axis: where a horizontal line at the current K meets the curve are the real closed-loop poles */
+function kSigmaPlot(cv, rl, o) {
+  const draw = () => {
+    const [a, b] = o.x, n = 1600, xs = [], ys = [];
+    const reals = [...rl.pr, ...rl.zr].filter(z => Math.abs(z[1]) < 1e-9).map(z => z[0]);
+    const onLocus = x => reals.filter(r => r > x).length % 2 === 1;
+    for (let i = 0; i <= n; i++) { const x = a + (b - a) * i / n; const K = rl.KofS(x); xs.push(x); ys.push(K > 0 && onLocus(x) ? Math.log10(K) : NaN); }
+    const Kc = rl.K > 0 ? Math.log10(rl.K) : null;
+    drawPlot(cv, { xlim: o.x, ylim: o.y, ystep: 1, noYzero: true, yfmt: v => fmt(Math.pow(10, v), 3), xlabel: "σ", ylabel: "K (log scale)", layers: [
+      ...reals.map(r => Lyr.vline(r, { color: rgba(col("coral"), .35), dash: [2, 3] })),
+      Lyr.line(xs, ys, { color: col("chalk"), w: 2.2 }),
+      Kc != null && Lyr.hline(Kc, { color: col("amber"), dash: [6, 4], w: 1.6, label: `current K = ${fmt(rl.K, 3)}` }),
+      Kc != null && (T => { for (let i = 1; i < xs.length; i++) { if (isFinite(ys[i]) && isFinite(ys[i - 1]) && (ys[i] - Kc) * (ys[i - 1] - Kc) <= 0) Lyr.dot(xs[i], Kc)(T); } }),
+      ...rl.brk.filter(p => p.s > a && p.s < b).map(p => T => { Lyr.dot(p.s, Math.log10(p.K), { color: col("violet"), r: 5.5 })(T); Lyr.text(p.s, Math.log10(p.K), `${p.type} σ = ${fmt(p.s, 3)}, K = ${fmt(p.K, 3)}`, { color: col("violet"), align: "center", dy: p.type === "break-in" ? 18 : -16 })(T); }),
+      ...(o.extra || []).map(f => f(rl)),
+    ] });
+  };
+  livePlot(cv, draw); rl.onK.push(draw);
+  return draw;
+}
+
+/* live Routh table */
+function routhPanel(host, rl, symb) {
+  const draw = () => {
+    const c = rl.charPoly(rl.K), R = routh(c), n = R.rows.length;
+    const pw = i => ["s⁰", "s¹", "s²", "s³", "s⁴", "s⁵"][n - 1 - i];
+    let h = `<div class="tblwrap"><table class="tbl" style="width:100%"><tr><th></th><th>symbolic first column</th><th>at K = ${fmt(rl.K, 3)}</th></tr>`;
+    R.rows.forEach((r, i) => { const v = R.first[i]; h += `<tr><td>${pw(i)}</td><td class="muted">${symb[i]}</td><td class="${v > 1e-12 ? "pos" : v < -1e-12 ? "neg" : ""}">${fmt(v, 4)}</td></tr>`; });
+    const rhp = rl.cl.filter(z => z[0] > 1e-7).length;
+    h += `</table></div><p style="margin:8px 0 0" class="small">${R.changes} sign change${R.changes === 1 ? "" : "s"} in the first column → ${rhp} closed-loop pole${rhp === 1 ? "" : "s"} in the right half-plane.</p>`;
+    host.innerHTML = h;
+  };
+  rl.onK.push(draw); draw();
+}
+
+function initT4() {
+  initTabs();
+  /* Exercise 1 */
+  const rl1 = new RootLocus($("#rl1"), { poles: CASES.ex1[0].poles, zeros: CASES.ex1[0].zeros, view: CASES.ex1[0].view, drag: true, Ks: [0.01, 1000] });
+  caseSwitcher("ex1", rl1);
+  /* Exercise 2 */
+  const rl2 = new RootLocus($("#rl2"), { poles: CASES.ex2[0].poles, zeros: CASES.ex2[0].zeros, view: CASES.ex2[0].view, Ks: [0.01, 1000] });
+  caseSwitcher("ex2", rl2);
+  /* Exercise 3 */
+  const rl3 = new RootLocus($("#rl3"), { poles: [[-1, 0], [7, 0]], zeros: [[-3, 0], [-5, 0]], view: { x: [-7, 9], y: [-4.6, 4.6] }, Ks: [0.01, 1000], K0: 1 });
+  const st3 = initStepper($("#st3"), { onStep: st => { rl3.setLayers(LAYER_SETS(st.dataset.layers)); if (st.dataset.k) rl3.setK(+st.dataset.k); } });
+  st3.go(0);
+  kSigmaPlot($("#ks3"), rl3, { x: [-7, 9], y: [-2, 3] });
+  /* Exercise 4 */
+  const rl4 = new RootLocus($("#rl4"), { poles: CASES.ex4[0].poles, zeros: CASES.ex4[0].zeros, view: CASES.ex4[0].view, step: true, Ks: [0.01, 1000], K0: 10 });
+  const SYMB = { a: ["1", "4 + K", "10 / (4 + K)", "K − 6"], b: ["1", "3 + K", "(−2K² − 6K + 6) / (3 + K)", "2K"] };
+  let ks4draw = null;
+  const routhHost = $("#routh4");
+  let symb = SYMB.a;
+  rl4.onK.push(() => { if (routhHost._draw) routhHost._draw(); });
+  routhHost._draw = () => {
+    const c = rl4.charPoly(rl4.K), R = routh(c), n = R.rows.length;
+    const pw = ["s³", "s²", "s¹", "s⁰"];
+    let h = `<div class="tblwrap"><table class="tbl" style="width:100%"><tr><th></th><th>first column</th><th>at K = ${fmt(rl4.K, 3)}</th></tr>`;
+    R.rows.forEach((r, i) => { const v = R.first[i]; h += `<tr><td>${pw[i]}</td><td class="muted">${symb[i]}</td><td class="${v > 1e-12 ? "pos" : v < -1e-12 ? "neg" : ""}">${fmt(v, 4)}</td></tr>`; });
+    const rhp = rl4.cl.filter(z => z[0] > 1e-7).length;
+    h += `</table></div><p style="margin:8px 0 0" class="small">${R.changes} sign change${R.changes === 1 ? "" : "s"} → ${rhp} closed-loop pole${rhp === 1 ? "" : "s"} in the right half-plane.</p>`;
+    routhHost.innerHTML = h;
+  };
+  const posted = rl => T => { if (rl.P.length === 3 && rl.P[0].re === 1 && rl.Z[0].im === 1 && rl.Z[0].re === 0) { const x = -0.1315, K = rl.KofS(x); Lyr.pole(x, Math.log10(K), { color: col("coral"), size: 5, w: 2 })(T); Lyr.text(x, Math.log10(K), "posted −0.13 (not the maximum)", { color: col("coral"), dx: -10, dy: 16, align: "right" })(T); } };
+  const cs4 = caseSwitcher("ex4", rl4, c => { symb = SYMB[c.id]; routhHost._draw(); if (ks4draw) ks4draw(); $("#ks4cap").textContent = c.id === "a" ? "Segment −2 < σ < 1 carries the breakaway. The curve reaches K = 6 exactly at σ = 0: that is where the branch from +1 crosses into the left half-plane." : "Segment −1 < σ < 0 carries the breakaway at σ ≈ −0.328."; });
+  ks4draw = kSigmaPlot($("#ks4"), rl4, { x: [-4, 1.6], y: [-2, 2.5], extra: [posted] });
+  routhHost._draw();
+}
+document.addEventListener("DOMContentLoaded", initT4);
+
+</script>
+</body>
+</html>

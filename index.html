@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Engineering for BME – Tutorials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d1626;--slab:#15233b;--rule:#263857;--rule-2:#34507a;--chalk:#e7eaf0;--graphite:#97a4ba;--faint:#5e6f8c;--amber:#f3b33d;--grid:rgba(108,150,214,.07)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ink);color:var(--chalk);font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.55;min-height:100vh;
+ background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+main{max-width:860px;margin:0 auto;padding:4rem 1.5rem 3rem}
+.kicker{color:var(--amber);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1.1;margin:.6rem 0 1rem}
+.lead{color:var(--graphite);max-width:60ch;margin-bottom:2.5rem}
+ol{list-style:none;padding:0;display:grid;gap:.8rem}
+a.card{display:flex;gap:1.2rem;align-items:baseline;padding:1.1rem 1.3rem;background:var(--slab);border:1px solid var(--rule);border-radius:10px;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+a.card:hover,a.card:focus-visible{border-color:var(--amber);transform:translateX(3px);outline:none}
+.num{font-family:Newsreader,Georgia,serif;font-size:1.8rem;color:var(--amber);min-width:2ch}
+.t{font-weight:500;font-size:1.05rem}
+.d{color:var(--graphite);font-size:.9rem}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);color:var(--faint);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">Control Engineering for BME</p>
+  <h1>Tutorials</h1>
+  <p class="lead">Interactive tutorials for the course, from Laplace transforms to frequency response. Work through them in order, or jump to the topic you need.</p>
+  <ol>
+    <li><a class="card" href="tutorial1_laplace_transfer_functions.html"><span class="num">1</span><span><span class="t">Laplace and transfer functions</span><br><span class="d">From differential equations to transfer functions</span></span></a></li>
+    <li><a class="card" href="tutorial2_response_and_stability.html"><span class="num">2</span><span><span class="t">Poles, second-order response and stability</span><br><span class="d">Time response, damping and pole locations</span></span></a></li>
+    <li><a class="card" href="tutorial3_block_diagrams.html"><span class="num">3</span><span><span class="t">Block diagrams</span><br><span class="d">Reduction rules and closed-loop transfer functions</span></span></a></li>
+    <li><a class="card" href="tutorial4_root_locus.html"><span class="num">4</span><span><span class="t">Root locus</span><br><span class="d">How closed-loop poles move with gain</span></span></a></li>
+    <li><a class="card" href="tutorial5_steady_state_error_state_space.html"><span class="num">5</span><span><span class="t">Steady-state error and state space</span><br><span class="d">System type, error constants and state-space models</span></span></a></li>
+    <li><a class="card" href="tutorial6_frequency_response_bode.html"><span class="num">6</span><span><span class="t">Frequency response and Bode plots</span><br><span class="d">Magnitude, phase and stability margins</span></span></a></li>
+  </ol>
+  <footer>ENTEG · University of Groningen</footer>
+</main>
+</body>
+</html>

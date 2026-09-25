@@ -1,0 +1,1745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tutorial 6 – Frequency response and Bode plots | Control Engineering for BME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] }, svg: { fontCache: "global" } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+/* ---------- Tokens: night-blueprint palette (always dark, as requested) ---------- */
+:root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+  --ink: #0d1626;          /* page */
+  --ink-2: #111d31;        /* sections */
+  --slab: #15233b;         /* raised surfaces, blocks */
+  --rule: #263857;         /* lines & borders */
+  --rule-2: #34507a;
+  --chalk: #e7eaf0;        /* primary text + diagram strokes */
+  --graphite: #97a4ba;     /* secondary text */
+  --faint: #5e6f8c;
+  --amber: #f3b33d;        /* the step being worked on */
+  --coral: #ff7a6b;        /* poles, instability */
+  --sky: #6cc4ff;          /* zeros, signals */
+  --mint: #7fe0b0;         /* stable */
+  --violet: #b9a2ff;
+  --grid: rgba(108, 150, 214, .07);
+  --grid-2: rgba(108, 150, 214, .13);
+  --serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--ink); color: var(--chalk);
+  font-family: var(--serif); font-size: 18px; line-height: 1.62;
+  font-optical-sizing: auto;
+}
+img, svg, canvas { max-width: 100%; }
+a { color: var(--sky); }
+::selection { background: rgba(243,179,61,.35); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* ---------- Header ---------- */
+.masthead { max-width: 1180px; margin: 0 auto; padding: 44px 24px 18px; }
+.masthead .course { font-family: var(--sans); font-size: 14px; color: var(--graphite); letter-spacing: .01em; margin: 0 0 6px; }
+.masthead h1 {
+  font-weight: 500; font-size: clamp(40px, 6.4vw, 76px); line-height: 1.02; margin: 0;
+  letter-spacing: -.015em;
+}
+.masthead h1 .tno { color: var(--faint); font-weight: 300; margin-right: .18em; }
+.masthead .lede { max-width: 68ch; color: var(--graphite); margin: 14px 0 0; font-size: 18px; }
+
+/* ---------- Tabs ---------- */
+.tabbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: rgba(13,22,38,.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.tabbar .inner { max-width: 1180px; margin: 0 auto; padding: 0 16px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tabbar .inner::-webkit-scrollbar { display: none; }
+.tab {
+  font-family: var(--sans); font-size: 14.5px; color: var(--graphite); background: none; border: 0;
+  padding: 14px 14px 12px; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.tab .n { font-family: var(--serif); font-size: 20px; color: var(--faint); font-variant-numeric: lining-nums; }
+.tab:hover { color: var(--chalk); }
+.tab[aria-selected="true"] { color: var(--chalk); border-bottom-color: var(--amber); }
+.tab[aria-selected="true"] .n { color: var(--amber); }
+
+/* ---------- Panels & sections ---------- */
+main { max-width: 1180px; margin: 0 auto; padding: 8px 24px 80px; }
+.panel { display: none; }
+.panel.active { display: block; }
+.sec { margin: 38px 0 0; }
+.sec > h2 { font-weight: 500; font-size: 30px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -.005em; }
+.sec > h3, .sub-h { font-family: var(--sans); font-weight: 600; font-size: 15px; color: var(--chalk); margin: 26px 0 8px; }
+.prose { max-width: 72ch; }
+.prose p { margin: 0 0 12px; }
+.muted { color: var(--graphite); }
+.small { font-size: 15px; }
+.src { font-family: var(--sans); font-size: 13.5px; color: var(--faint); }
+.problem { border-left: 3px solid var(--rule-2); padding: 4px 0 4px 20px; max-width: 76ch; }
+.problem p { margin: 0 0 8px; }
+
+/* ---------- Blueprint stage (diagram area) ---------- */
+.stage {
+  position: relative; border: 1px solid var(--rule); border-radius: 6px; padding: 18px 14px;
+  background-color: var(--ink-2);
+  background-image:
+    linear-gradient(var(--grid-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-2) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  overflow-x: auto;
+}
+.stage svg.bd { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 560px; }
+.stage .caption { font-family: var(--sans); font-size: 13px; color: var(--faint); margin-top: 8px; text-align: center; }
+
+/* Block-diagram drawing */
+svg.bd { font-family: var(--serif); }
+svg.bd .bd-block rect { fill: var(--slab); stroke: var(--chalk); stroke-width: 1.4; }
+svg.bd .bd-t { fill: var(--chalk); font-size: 17px; }
+svg.bd .bd-sig { fill: var(--sky); font-size: 16px; }
+svg.bd .bd-sign { fill: var(--chalk); font-size: 16px; font-family: var(--sans); }
+svg.bd .bd-wire { fill: none; stroke: var(--chalk); stroke-width: 1.5; stroke-linejoin: round; }
+svg.bd .bd-head { fill: var(--chalk); }
+svg.bd .bd-sum circle { fill: var(--slab); stroke: var(--chalk); stroke-width: 1.4; }
+svg.bd .bd-sum line { stroke: var(--chalk); stroke-width: 1.1; }
+svg.bd .bd-dot { fill: var(--chalk); }
+svg.bd .bd-frac { stroke: var(--chalk); stroke-width: 1.1; }
+svg.bd .hl-a rect, svg.bd .hl-a circle { stroke: var(--amber); fill: rgba(243,179,61,.12); stroke-width: 2; }
+svg.bd .hl-a .bd-t, svg.bd text.hl-a { fill: #ffd68a; }
+svg.bd .hl-a .bd-frac, svg.bd .hl-a line, svg.bd .bd-wire.hl-a { stroke: var(--amber); }
+svg.bd .bd-wire.hl-a { stroke-width: 2.2; }
+svg.bd .bd-head.hl-a, svg.bd .bd-dot.hl-a { fill: var(--amber); }
+svg.bd .hl-b rect, svg.bd .hl-b circle { stroke: var(--sky); fill: rgba(108,196,255,.12); stroke-width: 2; }
+svg.bd .hl-b .bd-t { fill: #bfe5ff; }
+svg.bd .hl-b .bd-frac, svg.bd .hl-b line, svg.bd .bd-wire.hl-b { stroke: var(--sky); }
+svg.bd .bd-wire.hl-b { stroke-width: 2.2; }
+svg.bd .bd-head.hl-b, svg.bd .bd-dot.hl-b { fill: var(--sky); }
+svg.bd .dim { opacity: .28; }
+svg.bd .tag-on rect, svg.bd .tag-on circle { stroke: var(--amber) !important; stroke-width: 2.2; fill: rgba(243,179,61,.14); }
+svg.bd .bd-wire.tag-on { stroke: var(--amber) !important; stroke-width: 2.6; }
+svg.bd .bd-head.tag-on, svg.bd .bd-dot.tag-on { fill: var(--amber) !important; }
+svg.bd.tagging > g:not(.tag-on), svg.bd.tagging > polyline:not(.tag-on), svg.bd.tagging > polygon:not(.tag-on), svg.bd.tagging > circle:not(.tag-on) { opacity: .3; }
+svg.bd .note { fill: var(--graphite); font-family: var(--sans); font-size: 12px; }
+#l2sl { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+#l2sl label.rng { margin-top: 6px; }
+
+/* ---------- Stepper ---------- */
+.stepper { margin-top: 6px; }
+.steps-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; counter-reset: st; }
+.pill {
+  font-family: var(--sans); font-size: 13.5px; border: 1px solid var(--rule); background: transparent; color: var(--graphite);
+  padding: 6px 11px 6px 8px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+}
+.pill .k { display: inline-grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: var(--slab); color: var(--chalk); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pill.done { color: var(--chalk); border-color: var(--rule-2); }
+.pill.done .k { background: var(--rule-2); }
+.pill.on { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+.pill.on .k { background: rgba(13,22,38,.18); color: var(--ink); }
+.step-vis { margin-bottom: 16px; }
+.step-vis:not(:has(> .vis.on)) { display: none; }
+.step-vis > .vis { display: none; }
+.step-vis > .vis.on { display: block; }
+.step-body > .step { display: none; }
+.step-body > .step.on { display: block; animation: fadein .25s ease; }
+.stepper.all .step-body > .step { display: block; border-top: 1px dashed var(--rule); padding-top: 14px; margin-top: 14px; }
+.step h4 { font-weight: 500; font-size: 23px; margin: 0 0 8px; }
+.step h4 .sn { color: var(--amber); margin-right: 8px; }
+.step p, .step li { max-width: 74ch; }
+.step ul, .step ol { padding-left: 1.2em; }
+.step-ctl { display: flex; gap: 8px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+@keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .step-body > .step.on { animation: none; } }
+
+/* ---------- Controls ---------- */
+.btn {
+  font-family: var(--sans); font-size: 14px; color: var(--chalk); background: var(--slab); border: 1px solid var(--rule-2);
+  padding: 7px 14px; border-radius: 4px; cursor: pointer;
+}
+.btn:hover { border-color: var(--graphite); }
+.btn.primary { background: var(--amber); color: var(--ink); border-color: var(--amber); font-weight: 600; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .4; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 4px; overflow: hidden; }
+.seg button { font-family: var(--sans); font-size: 14px; background: transparent; color: var(--graphite); border: 0; border-right: 1px solid var(--rule-2); padding: 7px 13px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--rule-2); color: var(--chalk); }
+.chk { font-family: var(--sans); font-size: 13.5px; color: var(--graphite); display: inline-flex; gap: 6px; align-items: center; margin-right: 14px; cursor: pointer; }
+.chk input { accent-color: var(--amber); }
+.sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; }
+label.rng { display: block; font-family: var(--sans); font-size: 14px; color: var(--graphite); margin: 10px 0 4px; }
+label.rng b { color: var(--chalk); font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--amber); }
+input[type=number] { font-family: var(--sans); font-size: 14px; width: 92px; background: var(--ink); color: var(--chalk); border: 1px solid var(--rule-2); border-radius: 4px; padding: 5px 7px; }
+
+/* ---------- Lab layout ---------- */
+.lab { display: grid; grid-template-columns: minmax(250px, 320px) 1fr; gap: 22px; align-items: start; }
+.lab .ctrls { font-family: var(--sans); }
+.lab .plots { display: grid; gap: 14px; min-width: 0; }
+.lab .plots.two { grid-template-columns: 1fr 1fr; }
+.plotbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--ink-2); padding: 8px; min-width: 0; }
+.plotbox .pt { font-family: var(--sans); font-size: 13px; color: var(--graphite); margin: 2px 4px 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.plotbox canvas { display: block; width: 100%; height: 300px; touch-action: none; }
+.plotbox canvas.tall { height: 420px; }
+.plotbox canvas.short { height: 230px; }
+.readout { font-family: var(--sans); font-size: 14px; border-top: 1px solid var(--rule); margin-top: 14px; padding-top: 10px; }
+.readout table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.readout td { padding: 3px 0; vertical-align: top; }
+.readout td:first-child { color: var(--graphite); padding-right: 10px; }
+.readout td:last-child { text-align: right; color: var(--chalk); }
+.badge { display: inline-block; font-family: var(--sans); font-size: 12.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+.badge.ok { background: rgba(127,224,176,.14); color: var(--mint); }
+.badge.bad { background: rgba(255,122,107,.15); color: var(--coral); }
+.badge.mid { background: rgba(243,179,61,.14); color: var(--amber); }
+.legend { font-family: var(--sans); font-size: 12.5px; color: var(--graphite); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Result & notes ---------- */
+.result { border: 1px solid var(--amber); border-radius: 6px; padding: 14px 20px; background: rgba(243,179,61,.05); max-width: 860px; overflow-x: auto; }
+.result .rt { font-family: var(--sans); font-size: 13.5px; color: var(--amber); margin-bottom: 2px; }
+.erratum { border-left: 3px solid var(--coral); padding: 6px 0 6px 18px; max-width: 80ch; }
+.erratum .rt { font-family: var(--sans); font-size: 14px; color: var(--coral); font-weight: 600; margin-bottom: 4px; }
+.erratum p { margin: 0 0 8px; }
+.insight { border-left: 3px solid var(--sky); padding: 4px 0 4px 18px; max-width: 78ch; margin: 14px 0; }
+.insight .rt { font-family: var(--sans); font-size: 14px; color: var(--sky); font-weight: 600; }
+.eq { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+mjx-container[display="true"] { margin: .7em 0 !important; }
+mjx-container { max-width: 100%; }
+
+/* Tool cards (canonical forms) */
+.forms { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 390px)); gap: 12px; }
+.form { border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px 12px; background: var(--ink-2); }
+.form .ft { font-family: var(--sans); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.form svg.bd { width: 100%; height: auto; }
+.form .eq { font-size: 16px; }
+
+
+/* ---------- Circuit & mechanical schematics ---------- */
+svg.bd .el { fill: none; stroke: var(--chalk); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+svg.bd .el.solid { fill: var(--slab); }
+svg.bd g.hl-a .el, svg.bd .el.hl-a { stroke: var(--amber); }
+svg.bd g.hl-b .el, svg.bd .el.hl-b { stroke: var(--sky); }
+svg.bd .lbl { fill: var(--chalk); font-family: var(--serif); font-size: 16px; }
+svg.bd .lbl.q { fill: var(--sky); }
+svg.bd .lbl.dim2 { fill: var(--graphite); font-size: 14px; }
+svg.bd .hatch { fill: none; stroke: var(--faint); stroke-width: 1.3; }
+svg.bd .mesh { fill: none; stroke: var(--sky); stroke-width: 1.3; }
+svg.bd .meshhead { fill: var(--sky); }
+svg.bd .massrect { fill: var(--slab); stroke: var(--chalk); stroke-width: 1.5; }
+svg.bd g.hl-a .massrect { stroke: var(--amber); fill: rgba(243,179,61,.12); }
+svg.bd g.hl-b .massrect { stroke: var(--sky); fill: rgba(108,196,255,.12); }
+svg.bd .fa { fill: none; stroke: var(--coral); stroke-width: 1.8; }
+svg.bd .fahead { fill: var(--coral); }
+svg.bd .loopband { fill: none; stroke: var(--amber); stroke-width: 6; opacity: .3; stroke-linejoin: round; }
+svg.bd .loopband.b { stroke: var(--sky); }
+
+/* standalone plot grids (outside .lab) */
+.plots { display: grid; gap: 14px; min-width: 0; }
+.plots.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 900px) { .plots.two { grid-template-columns: 1fr; } }
+
+.matgrid { display: grid; gap: 6px; max-width: 330px; margin: 8px 0 12px; }
+.matgrid input[type=number] { width: 100%; text-align: right; }
+
+/* Tables */
+table.tbl { border-collapse: collapse; font-family: var(--sans); font-size: 14px; font-variant-numeric: tabular-nums; }
+table.tbl th, table.tbl td { border-bottom: 1px solid var(--rule); padding: 6px 12px; text-align: left; }
+table.tbl th { color: var(--graphite); font-weight: 500; }
+table.tbl td.pos { color: var(--mint); }
+table.tbl td.neg { color: var(--coral); }
+table.tbl tr.click { cursor: pointer; }
+table.tbl tr.click:hover td { background: rgba(255,255,255,.03); }
+table.tbl tr.sel td { background: rgba(243,179,61,.1); }
+.tblwrap { overflow-x: auto; }
+
+/* Root-locus split layout (tutorial 4) */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 26px; align-items: start; }
+.split .sticky { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); }
+.rl-ctl { font-family: var(--sans); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.rl-ctl .kval { font-variant-numeric: tabular-nums; color: var(--chalk); min-width: 86px; }
+.rl-ctl input[type=range] { flex: 1 1 180px; width: auto; }
+.rl-read { font-family: var(--sans); font-size: 13.5px; color: var(--graphite); margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+.rl-read b { color: var(--chalk); font-weight: 500; font-variant-numeric: tabular-nums; }
+.rl-hover { font-family: var(--sans); font-size: 13px; color: var(--graphite); min-height: 20px; margin-top: 6px; }
+.cases { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 14px; }
+
+@media (max-width: 900px) {
+  .lab, .split { grid-template-columns: 1fr; }
+  .split .sticky { position: static; }
+  .lab .plots.two { grid-template-columns: 1fr; }
+  body { font-size: 17px; }
+}
+@media (max-width: 560px) {
+  .masthead { padding: 28px 16px 12px; }
+  main { padding: 4px 14px 60px; }
+  .sec > h2 { font-size: 25px; }
+  .plotbox canvas.tall { height: 340px; }
+  .rl-read { grid-template-columns: 1fr; }
+}
+@media print {
+  .tabbar, .step-ctl, .steps-nav { display: none; }
+  .panel { display: block !important; page-break-after: always; }
+}
+
+</style>
+</head>
+<body>
+<header class="masthead">
+  <p class="course">Control Engineering for BME, tutorial 6 (week 7)</p>
+  <h1><span class="tno">6</span>Frequency response and Bode plots</h1>
+  <p class="lede">Chapter 10 of Nise, <i>Control Systems Engineering</i> (6th ed.): the analytical magnitude and phase of a transfer function, the asymptotic sketches that make them quick to draw, and how the Nyquist plot decides closed-loop stability. Step through the walkthroughs with the buttons or the ← → keys, then take the sliders in the labs.</p>
+</header>
+
+<nav class="tabbar" aria-label="Exercises"><div class="inner" role="tablist">
+  <button class="tab" role="tab" data-for="ex1"><span class="n">1</span>Magnitude and phase P10.1</button>
+  <button class="tab" role="tab" data-for="ex2"><span class="n">2</span>Asymptotic Bode plots P10.4</button>
+  <button class="tab" role="tab" data-for="ex3"><span class="n">3</span>Nyquist and stability</button>
+</div></nav>
+
+<main>
+<!-- ===================================================== EXERCISE 1 -->
+<section class="panel" id="ex1" role="tabpanel">
+  <div class="sec">
+    <h2>Analytical magnitude and phase</h2>
+    <div class="problem">
+      <p>Find analytical expressions for the magnitude and phase response of</p>
+      <div class="eq">\[\text{(a)}\quad G(s)=\frac{1}{s(s+2)(s+4)}\qquad\qquad\text{(b)}\quad G(s)=\frac{s+5}{(s+2)(s+4)}\]</div>
+      <p class="src">Nise, chapter 10, problem 1 (a, b), p. 610. Section 10.1.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3 class="sub-h">Two routes to the same answer</h3>
+    <div class="forms">
+      <div class="form"><div class="ft">Route 1 — rectangular form</div>
+        <p class="small">Put \(s=j\omega\), multiply everything out, rationalise until \(G=\text{Re}+j\,\text{Im}\), then</p>
+        <div class="eq small">\[M=\sqrt{\text{Re}^2+\text{Im}^2},\qquad \phi=\arctan\frac{\text{Im}}{\text{Re}}\]</div>
+        <p class="small muted">Always works, but the algebra grows fast and the arctangent needs a quadrant check.</p></div>
+      <div class="form"><div class="ft">Route 2 — factored form</div>
+        <p class="small">Keep the factors and use the fact that magnitudes multiply and angles add:</p>
+        <div class="eq small">\[M=\frac{\prod|\text{zero factors}|}{\prod|\text{pole factors}|},\qquad \phi=\sum\angle\text{zeros}-\sum\angle\text{poles}\]</div>
+        <p class="small muted">Each factor \(j\omega+a\) contributes \(\sqrt{a^2+\omega^2}\) and \(\arctan(\omega/a)\). No rationalising, no quadrant trouble.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="cases" id="cases-e1"></div>
+
+    <div data-case="cases-e1-a">
+      <div class="stepper" data-case="cases-e1-a" data-key="e1a">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Put s = jω and expand">
+            <div class="eq">\[G(j\omega)=\frac{1}{j\omega(j\omega+2)(j\omega+4)}=\frac{1}{j\omega(-\omega^2+6j\omega+8)}=\frac{1}{-6\omega^2+j(8\omega-\omega^3)}\]</div>
+            <p>Both the real part \(-6\omega^2\) and the imaginary part \(8\omega-\omega^3\) came out of the same product; keep them apart from here on.</p>
+          </div>
+          <div class="step" data-title="Magnitude">
+            <p>The magnitude of a quotient is the quotient of the magnitudes:</p>
+            <div class="eq">\[M=|G(j\omega)|=\frac{1}{\sqrt{36\omega^4+(8\omega-\omega^3)^2}}=\frac{1}{\sqrt{\omega^6+20\omega^4+64\omega^2}}=\frac{1}{\sqrt{\omega^2(\omega^4+20\omega^2+64)}}\]</div>
+            <p>and since \(\omega^4+20\omega^2+64=(\omega^2+4)(\omega^2+16)\), this is the same as</p>
+            <div class="eq">\[M=\frac{1}{\omega\sqrt{\omega^2+4}\,\sqrt{\omega^2+16}}\]</div>
+          </div>
+          <div class="step" data-title="Phase, with the quadrant check">
+            <p>The phase of \(1/D\) is minus the phase of \(D\). Since \(\text{Re}(D)=-6\omega^2\) is always negative, \(D\) never lies in the right half of the complex plane, and a plain \(\arctan\) of the ratio would land in the wrong quadrant — hence the \(-180^\circ\):</p>
+            <div class="eq">\[\phi=\arctan\!\left[\frac{8\omega-\omega^3}{6\omega^2}\right]-180^\circ\]</div>
+            <p>Check the ends: as \(\omega\to0\) the arctangent tends to \(+90^\circ\), so \(\phi\to-90^\circ\); as \(\omega\to\infty\) it tends to \(-90^\circ\), so \(\phi\to-270^\circ\). Three poles, \(-270^\circ\) of total phase lag: exactly what you expect.</p>
+          </div>
+          <div class="step" data-title="The same thing, factor by factor" data-vis="t6e1_a">
+            <p>Reading the factored form directly:</p>
+            <div class="eq">\[M=\frac{1}{|j\omega|\cdot|j\omega+2|\cdot|j\omega+4|}=\frac{1}{\omega\sqrt{4+\omega^2}\sqrt{16+\omega^2}}\]</div>
+            <div class="eq">\[\phi=-\angle j\omega-\angle(j\omega+2)-\angle(j\omega+4)=-90^\circ-\arctan\frac{\omega}{2}-\arctan\frac{\omega}{4}\]</div>
+            <p>Identical numbers, a fraction of the work, and no quadrant discussion: each term's angle is already in the right range.</p>
+          </div>
+          <div class="step" data-title="Check one frequency" data-vis="t6e1_a">
+            <p>At \(\omega=2\):</p>
+            <div class="eq">\[M=\frac{1}{2\sqrt{8}\sqrt{20}}=0.03953\;(-28.06\text{ dB}),\qquad \phi=-90^\circ-45^\circ-26.57^\circ=-161.57^\circ\]</div>
+            <p>The lab below does this graphically for any frequency you like.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-case="cases-e1-b">
+      <div class="stepper" data-case="cases-e1-b" data-key="e1b">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Put s = jω and rationalise">
+            <div class="eq">\[G(j\omega)=\frac{j\omega+5}{(j\omega+2)(j\omega+4)}=\frac{j\omega+5}{(8-\omega^2)+6j\omega}\]</div>
+            <p>Multiplying above and below by the conjugate of the denominator:</p>
+            <div class="eq">\[G(j\omega)=\frac{(\omega^2+40)-j(\omega^3+22\omega)}{\omega^4+20\omega^2+64}\]</div>
+          </div>
+          <div class="step" data-title="Magnitude">
+            <div class="eq">\[M=\frac{\sqrt{(\omega^2+40)^2+(\omega^3+22\omega)^2}}{\omega^4+20\omega^2+64}\]</div>
+            <p>which, once you notice \((\omega^2+40)^2+\omega^2(\omega^2+22)^2=(\omega^2+25)(\omega^4+20\omega^2+64)\), collapses to</p>
+            <div class="eq">\[M=\frac{\sqrt{\omega^2+25}}{\sqrt{\omega^2+4}\,\sqrt{\omega^2+16}}\]</div>
+          </div>
+          <div class="step" data-title="Phase">
+            <p>The denominator of the rationalised form is real and positive, so the quadrant is settled by the numerator: positive real part, negative imaginary part, hence a phase between \(0^\circ\) and \(-90^\circ\):</p>
+            <div class="eq">\[\phi=-\arctan\!\left[\frac{\omega^3+22\omega}{\omega^2+40}\right]\]</div>
+          </div>
+          <div class="step" data-title="Factor by factor" data-vis="t6e1_b">
+            <div class="eq">\[M=\frac{|j\omega+5|}{|j\omega+2|\,|j\omega+4|}=\frac{\sqrt{25+\omega^2}}{\sqrt{4+\omega^2}\sqrt{16+\omega^2}}\]</div>
+            <div class="eq">\[\phi=\arctan\frac{\omega}{5}-\arctan\frac{\omega}{2}-\arctan\frac{\omega}{4}\]</div>
+            <p>The zero contributes a <b>positive</b> angle, the poles negative ones. At low frequency they nearly cancel, which is why this system's phase never goes far below \(-90^\circ\).</p>
+          </div>
+          <div class="step" data-title="Check one frequency" data-vis="t6e1_b">
+            <p>At \(\omega=3\): \(M=\sqrt{34}/(\sqrt{13}\sqrt{25})=0.3234\;(-9.81\text{ dB})\) and</p>
+            <div class="eq">\[\phi=30.96^\circ-56.31^\circ-36.87^\circ=-62.22^\circ\]</div>
+            <p>The rationalised expression gives \(-\arctan(93/49)=-62.22^\circ\) ✓ — same number, more algebra.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><div class="result"><div class="rt">Result</div>
+    \[\text{(a)}\quad M=\frac{1}{\omega\sqrt{\omega^2+4}\sqrt{\omega^2+16}},\qquad \phi=-90^\circ-\arctan\frac{\omega}{2}-\arctan\frac{\omega}{4}\]
+    \[\text{(b)}\quad M=\frac{\sqrt{\omega^2+25}}{\sqrt{\omega^2+4}\sqrt{\omega^2+16}},\qquad \phi=\arctan\frac{\omega}{5}-\arctan\frac{\omega}{2}-\arctan\frac{\omega}{4}\]</div></div>
+
+  <div class="sec">
+    <h2>Lab: read the frequency response off the s-plane</h2>
+    <p class="prose">Every factor \((j\omega+a)\) is the vector that runs from the pole or zero at \(-a\) to the test point \(s=j\omega\). Slide the test point up the imaginary axis: the magnitude is the product of the blue vector lengths divided by the product of the red ones, and the phase is the sum of the blue angles minus the sum of the red ones.</p>
+    <div class="cases" id="cases-l1"></div>
+    <div class="lab">
+      <div class="ctrls">
+        <label class="rng" for="l1w">ω = <b id="l1wv">1</b> rad/s</label><input type="range" id="l1w" min="-1" max="1.3" step="0.005" value="0">
+        <div class="readout" id="l1out"></div>
+      </div>
+      <div class="plots">
+        <div class="plotbox"><div class="pt"><span>s-plane: the vectors to s = jω</span></div><canvas id="l1s"></canvas></div>
+        <div class="plotbox"><div class="pt"><span>|G| in dB, with the test frequency marked</span></div><canvas id="l1m" class="short"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><div class="erratum"><div class="rt">Notes on the posted solution</div>
+    <p>In part (b) the phase is printed as \(\phi=-\arctan\left[\frac{-\omega^3+22\omega}{\omega^2+40}\right]\), but the line above it has the imaginary part as \(-(\omega^3+22\omega)\). The sign inside the bracket should stay positive: \(\phi=-\arctan\left[\frac{\omega^3+22\omega}{\omega^2+40}\right]\). With the printed version the phase would turn positive above \(\omega=\sqrt{22}\), which cannot happen for a system with two poles and one zero.</p>
+    <p>In part (a) the sentence “since both imaginary and real parts are negative you have to subtract 180°” only describes the high-frequency case; at low frequency the imaginary part is positive. The \(-180^\circ\) is there because the real part is negative <i>for all</i> \(\omega\), which is what puts the plain arctangent in the wrong quadrant.</p></div></div>
+</section>
+
+<!-- ===================================================== EXERCISE 2 -->
+<section class="panel" id="ex2" role="tabpanel">
+  <div class="sec">
+    <h2>Asymptotic Bode sketches</h2>
+    <div class="problem">
+      <p>For each function of exercise 1, sketch the asymptotic Bode magnitude and phase plots.</p>
+      <p class="src">Nise, chapter 10, problem 4, p. 610. Section 10.2.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3 class="sub-h">The four building blocks</h3>
+    <p class="prose">First put every factor in the normalised form \(\left(\frac{j\omega}{a}+1\right)\), so that each term is 1 at low frequency and the leading constant carries the whole DC gain. Then add the pieces — in dB for the magnitude, in degrees for the phase.</p>
+    <div class="tblwrap"><table class="tbl" style="max-width:980px">
+      <tr><th>Term</th><th>Magnitude</th><th>Phase</th></tr>
+      <tr><td>constant \(K\)</td><td>flat line at \(20\log_{10}|K|\) dB</td><td>0° (180° if \(K&lt;0\))</td></tr>
+      <tr><td>pole at the origin \(1/j\omega\)</td><td>straight −20 dB/decade, passing through 0 dB at \(\omega=1\)</td><td>constant −90°</td></tr>
+      <tr><td>pole at \(-a\)</td><td>0 dB below \(\omega=a\), then −20 dB/decade</td><td>0° up to \(a/10\), then −45°/decade, reaching −90° at \(10a\)</td></tr>
+      <tr><td>zero at \(-a\)</td><td>0 dB below \(\omega=a\), then +20 dB/decade</td><td>0° up to \(a/10\), then +45°/decade, reaching +90° at \(10a\)</td></tr>
+    </table></div>
+    <p class="small muted">The break frequency \(a\) is where the asymptote changes slope; the exact curve is 3 dB away from the corner there, and the phase asymptote is a straight line through −45° (or +45°) at that same point.</p>
+  </div>
+
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="cases" id="cases-e2"></div>
+
+    <div data-case="cases-e2-a">
+      <div class="stepper" data-case="cases-e2-a" data-key="e2a">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Normalise the factors" data-vis="t6e2_a0">
+            <div class="eq">\[G(j\omega)=\frac{1}{j\omega(j\omega+2)(j\omega+4)}=\frac{1}{8\,j\omega\left(\frac{j\omega}{2}+1\right)\left(\frac{j\omega}{4}+1\right)}\]</div>
+            <p>Four terms: the constant \(\frac18\), a pole at the origin, a pole breaking at 2 and a pole breaking at 4.</p>
+            <div class="eq">\[20\log_{10}(0.125)=-18.06\text{ dB}\]</div>
+            <p>A positive constant contributes nothing to the phase.</p>
+          </div>
+          <div class="step" data-title="The pole at the origin" data-vis="t6e2_a1">
+            <p>\(1/j\omega\) has magnitude \(1/\omega\), which in dB is a straight line of slope <b>−20 dB/decade</b> crossing 0 dB at \(\omega=1\). Its phase is a constant <b>−90°</b>, at every frequency.</p>
+            <p>Together with the constant, the low-frequency asymptote of the whole plot is therefore \(-18.06\) dB at \(\omega=1\) sloping down at 20 dB/decade — the amber line.</p>
+          </div>
+          <div class="step" data-title="The pole at −2" data-vis="t6e2_a2">
+            <p>Break frequency 2. Below it this term adds nothing; above it the slope steepens by another −20 dB/decade, so the total becomes −40 dB/decade.</p>
+            <p>Its phase asymptote starts at \(\omega=0.2\), falls at −45°/decade and flattens out at −90° from \(\omega=20\) onwards.</p>
+          </div>
+          <div class="step" data-title="The pole at −4" data-vis="t6e2_a3">
+            <p>Same shape, break frequency 4: the magnitude slope goes to −60 dB/decade above it, and the phase contributes another −45°/decade between \(\omega=0.4\) and \(\omega=40\).</p>
+          </div>
+          <div class="step" data-title="Add everything up" data-vis="t6e2_a4">
+            <div class="tblwrap"><table class="tbl" style="max-width:640px">
+              <tr><th></th><th>ω &lt; 2</th><th>2 &lt; ω &lt; 4</th><th>ω &gt; 4</th></tr>
+              <tr><td>pole at 0</td><td>−20 dB/dec</td><td>−20 dB/dec</td><td>−20 dB/dec</td></tr>
+              <tr><td>pole at −2</td><td>0</td><td>−20 dB/dec</td><td>−20 dB/dec</td></tr>
+              <tr><td>pole at −4</td><td>0</td><td>0</td><td>−20 dB/dec</td></tr>
+              <tr><td><b>total</b></td><td><b>−20 dB/dec</b></td><td><b>−40 dB/dec</b></td><td><b>−60 dB/dec</b></td></tr>
+            </table></div>
+            <p>And the phase, corner by corner: \(-90^\circ\) up to \(\omega=0.2\); \(-45^\circ\)/decade from 0.2 to 0.4; \(-90^\circ\)/decade from 0.4 to 20 (both poles contributing); \(-45^\circ\)/decade from 20 to 40; then flat at \(-270^\circ\).</p>
+            <p>The white curve is the exact response. The asymptotes miss it by 3 dB at each break frequency and by a few degrees at the phase corners — close enough for design work, which is the whole point of the sketch.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-case="cases-e2-b">
+      <div class="stepper" data-case="cases-e2-b" data-key="e2b">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Normalise the factors" data-vis="t6e2_b0">
+            <div class="eq">\[G(j\omega)=\frac{j\omega+5}{(j\omega+2)(j\omega+4)}=\frac{5\left(\frac{j\omega}{5}+1\right)}{2\cdot4\left(\frac{j\omega}{2}+1\right)\left(\frac{j\omega}{4}+1\right)}=\frac58\cdot\frac{\frac{j\omega}{5}+1}{\left(\frac{j\omega}{2}+1\right)\left(\frac{j\omega}{4}+1\right)}\]</div>
+            <p>Four terms again: the constant \(\frac58\;(-4.08\) dB), a zero at 5, poles at 2 and 4. There is no pole at the origin this time, so the plot starts flat.</p>
+          </div>
+          <div class="step" data-title="What the zero does" data-vis="t6e2_b0">
+            <p>A zero is a pole with the signs flipped: above its break frequency of 5 the magnitude asymptote turns <b>up</b> by 20 dB/decade, and the phase climbs \(+45^\circ\)/decade between \(\omega=0.5\) and \(\omega=50\).</p>
+          </div>
+          <div class="step" data-title="Add them up" data-vis="t6e2_b1">
+            <div class="tblwrap"><table class="tbl" style="max-width:720px">
+              <tr><th></th><th>ω &lt; 2</th><th>2 &lt; ω &lt; 4</th><th>4 &lt; ω &lt; 5</th><th>ω &gt; 5</th></tr>
+              <tr><td>pole at −2</td><td>0</td><td>−20</td><td>−20</td><td>−20</td></tr>
+              <tr><td>pole at −4</td><td>0</td><td>0</td><td>−20</td><td>−20</td></tr>
+              <tr><td>zero at −5</td><td>0</td><td>0</td><td>0</td><td>+20</td></tr>
+              <tr><td><b>total (dB/dec)</b></td><td><b>0</b></td><td><b>−20</b></td><td><b>−40</b></td><td><b>−20</b></td></tr>
+            </table></div>
+            <p>So the plot leaves \(-4.08\) dB flat, tips down at 2, steepens at 4, and is pulled back to a single −20 dB/decade slope by the zero at 5 — which is the correct final slope, since the transfer function has two poles and one zero.</p>
+          </div>
+          <div class="step" data-title="The phase" data-vis="t6e2_b1">
+            <p>Corners at \(0.2,\;0.4,\;0.5,\;20,\;40,\;50\). The two poles pull the phase down to \(-180^\circ\), the zero pushes \(+90^\circ\) back up, so the curve ends at \(-90^\circ\) — as it must, for one more pole than zeros.</p>
+            <p>In between, the phase dips to about \(-64^\circ\) around \(\omega=4\) and comes back up. That non-monotonic shape is the visible signature of a zero sitting close to the poles.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Lab: build the sketch one term at a time</h2>
+    <p class="prose">Untick a term to remove its contribution, or show the individual asymptotes as dashed lines. The readout compares the asymptotic value with the exact one at the marked frequency.</p>
+    <div class="cases" id="cases-l2"></div>
+    <div class="lab">
+      <div class="ctrls">
+        <div id="l2terms"></div>
+        <p style="margin:12px 0 4px"><label class="chk"><input type="checkbox" id="l2parts" checked><span>show each term separately</span></label>
+        <label class="chk"><input type="checkbox" id="l2asym" checked><span>asymptotic sum</span></label>
+        <label class="chk"><input type="checkbox" id="l2exact" checked><span>exact curve</span></label></p>
+        <label class="rng" for="l2w">test frequency ω = <b id="l2wv">1</b> rad/s</label><input type="range" id="l2w" min="-1" max="2" step="0.005" value="0">
+        <div class="readout" id="l2out"></div>
+      </div>
+      <div class="plots">
+        <div class="plotbox"><div class="pt"><span>Magnitude (dB)</span><span>white: exact, amber: asymptotic sum</span></div><canvas id="l2m" class="short"></canvas></div>
+        <div class="plotbox"><div class="pt"><span>Phase (degrees)</span></div><canvas id="l2p" class="short"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><div class="erratum"><div class="rt">Note on the posted solution</div>
+    <p>In part 2 the magnitude sketch of the zero is labelled “Pole at 5”; it is a zero at \(-5\), and the line drawn (+20 dB/decade above the break) is the zero's, not a pole's. The slope table and the final sketches are right.</p></div></div>
+</section>
+
+<!-- ===================================================== EXERCISE 3 -->
+<section class="panel" id="ex3" role="tabpanel">
+  <div class="sec">
+    <h2>Stability from the Nyquist plot</h2>
+    <div class="problem">
+      <p>Explain how the stability of the closed-loop system can be determined from the Nyquist plot.</p>
+      <p class="src">Tutorial exercise 3.</p>
+    </div>
+    <div class="stage form-vis" data-vis="t6e3_nyq" style="margin-top:16px;max-width:620px"></div>
+  </div>
+  <div class="sec">
+    <h2>Walkthrough</h2>
+    <div class="stepper" data-key="e3">
+      <div class="steps-nav"></div>
+      <div class="step-body">
+        <div class="step" data-title="What the plot actually is">
+          <p>Take the contour that wraps the whole right half of the s-plane — up the imaginary axis from \(-j\infty\) to \(+j\infty\), then round by an infinite semicircle — and map every point of it through \(G(s)H(s)\). The picture that comes out is the Nyquist plot.</p>
+          <p>In practice you only draw \(G(j\omega)\) for \(\omega:0\to\infty\); the negative frequencies are its mirror image in the real axis, and for a strictly proper \(G\) the infinite semicircle maps to the origin. If \(G\) has poles on the imaginary axis (an integrator, say) the contour makes a small detour to the right around them, and that detour maps to a large arc.</p>
+        </div>
+        <div class="step" data-title="The criterion">
+          <p>Closed-loop poles are zeros of \(1+G(s)H(s)\), so counting them inside the contour is a job for the argument principle. Writing</p>
+          <div class="eq">\[Z=N+P\]</div>
+          <ul>
+            <li>\(Z\) — closed-loop poles in the right half-plane. <b>Stable means \(Z=0\).</b></li>
+            <li>\(N\) — the number of <b>clockwise</b> encirclements of the point \(-1\) by the Nyquist plot (counter-clockwise ones count as negative).</li>
+            <li>\(P\) — the number of <b>open-loop</b> poles already in the right half-plane, read off \(G(s)H(s)\) before the loop is closed.</li>
+          </ul>
+          <p>Why \(-1\): the plot of \(GH\) encircling \(-1\) is the same as the plot of \(1+GH\) encircling the origin, and the origin is where the closed-loop poles live.</p>
+        </div>
+        <div class="step" data-title="When “do not encircle −1” is enough">
+          <p>If the open-loop system is itself stable, \(P=0\), and the criterion collapses to \(Z=N\): the closed loop is stable exactly when the plot does not encircle \(-1\). That is the common case, and the one the posted answer describes.</p>
+          <p>It is not the general case. With \(P=1\) the plot <b>must</b> encircle \(-1\) once counter-clockwise (\(N=-1\)) to give \(Z=0\). Avoiding \(-1\) there would leave \(Z=1\) — unstable. The second system in the lab is exactly that situation.</p>
+        </div>
+        <div class="step" data-title="Worked example: the system from exercise 1">
+          <p>Take \(G(s)=\dfrac{K}{s(s+2)(s+4)}\), unity feedback. It has no right-half-plane poles, so \(P=0\).</p>
+          <p>The plot crosses the negative real axis where the imaginary part vanishes, i.e. where \(8\omega-\omega^3=0\), so at \(\omega=\sqrt8=2.83\) rad/s. There</p>
+          <div class="eq">\[G(j2.83)=\frac{K}{-6(8)}=-\frac{K}{48}\]</div>
+          <p>The crossing reaches \(-1\) when \(K=48\). Below that the plot does not enclose \(-1\) and the loop is stable; above it there are two clockwise encirclements, so \(Z=2\).</p>
+          <p>Compare with Routh on \(s^3+6s^2+8s+K\): the \(s^1\) row is \(\frac{48-K}{6}\), stable for \(0&lt;K&lt;48\). Two completely different methods, the same number.</p>
+        </div>
+        <div class="step" data-title="Margins: how much room is left">
+          <p>The same plot measures <i>how close</i> to instability you are:</p>
+          <ul>
+            <li><b>Gain margin</b> — the factor by which \(K\) can grow before the crossing reaches \(-1\). Here, at \(K=20\), the crossing sits at \(-20/48=-0.417\), so the gain margin is \(1/0.417=2.4\) (7.6 dB).</li>
+            <li><b>Phase margin</b> — the extra phase lag that would push the point where \(|GH|=1\) onto \(-1\), measured as the angle from \(-180^\circ\) at that frequency.</li>
+          </ul>
+          <p>Both are read straight off the Bode plots of the previous tab as well, which is why the frequency-response view is so useful in design.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec"><div class="result"><div class="rt">Result</div>
+    <p style="margin:0">The closed loop is stable when \(Z=N+P=0\): the Nyquist plot of \(GH\) must encircle \(-1\) exactly \(P\) times counter-clockwise, where \(P\) is the number of open-loop poles in the right half-plane. For an open-loop stable system (\(P=0\)) this means simply: <b>do not encircle \(-1\)</b>.</p></div></div>
+  <div class="sec">
+    <h2>Lab: count the encirclements</h2>
+    <p class="prose">The solid amber curve is \(KG(j\omega)\) for positive frequencies, the dashed one its mirror for negative frequencies. The readout counts the encirclements of \(-1\) numerically along the full contour and compares the verdict with the closed-loop poles.</p>
+    <div class="cases" id="cases-l3"></div>
+    <div class="lab">
+      <div class="ctrls">
+        <label class="rng" for="l3K">K = <b id="l3Kv">20</b></label><input type="range" id="l3K" min="1" max="200" step="0.5" value="20">
+        <p><button class="btn" id="l3gm" type="button">Set K = 48 (the first system's limit)</button></p>
+        <div class="readout" id="l3out"></div>
+      </div>
+      <div class="plots"><div class="plotbox"><div class="pt"><span>Nyquist plot of KG(s)</span><span>red: the point −1</span></div><canvas id="l3n" class="tall"></canvas></div></div>
+    </div>
+  </div>
+  <div class="sec"><div class="erratum"><div class="rt">Note on the posted solution</div>
+    <p>“The closed-loop system is stable if the plot does not encircle \(-1\)” is the \(P=0\) special case. The general statement needs the open-loop right-half-plane poles: \(Z=N+P\). Switch the lab to the second system (\(P=1\)) to see a loop that is stable <i>because</i> its Nyquist plot encircles the critical point once.</p></div></div>
+</section>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Shared engine for the Control Engineering tutorial pages
+   - complex numbers & polynomials (roots by Aberth–Ehrlich)
+   - exact step-response simulation (ZOH-exact via matrix exponential)
+   - canvas plotting, SVG block-diagram renderer, stepper, tabs
+   - interactive root-locus widget
+   ===================================================================== */
+
+/* ---------------- helpers ---------------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const minus = s => String(s).replace(/-/g, "−");
+function fmt(x, d = 3) {
+  if (x === Infinity) return "∞";
+  if (x === -Infinity) return "−∞";
+  if (!isFinite(x)) return "—";
+  const ax = Math.abs(x);
+  if (ax < 0.5 * Math.pow(10, -d)) return "0";
+  let s;
+  if (ax >= 1e6 || ax < 1e-3) s = x.toExponential(2);
+  else s = String(+x.toFixed(d));
+  return minus(s);
+}
+function fmtC(z, d = 3) {
+  const [re, im] = z;
+  if (Math.abs(im) < 1e-7 * (1 + Math.abs(re))) return fmt(re, d);
+  const r = Math.abs(re) < 0.5 * Math.pow(10, -d) ? "" : fmt(re, d) + " ";
+  return r + (im < 0 ? "− " : (r ? "+ " : "")) + "j" + fmt(Math.abs(im), d);
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+/* ---------------- complex ---------------- */
+const Cx = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
+  mul: (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]],
+  div: (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; },
+  abs: a => Math.hypot(a[0], a[1]),
+  arg: a => Math.atan2(a[1], a[0]),
+};
+
+/* ---------------- polynomials (highest power first) ---------------- */
+const Poly = {
+  trim(p) { let i = 0; while (i < p.length - 1 && Math.abs(p[i]) < 1e-14) i++; return p.slice(i); },
+  add(a, b) {
+    const n = Math.max(a.length, b.length), r = new Array(n).fill(0);
+    a.forEach((v, i) => r[n - a.length + i] += v);
+    b.forEach((v, i) => r[n - b.length + i] += v);
+    return r;
+  },
+  scale(a, k) { return a.map(v => v * k); },
+  mul(a, b) {
+    const r = new Array(a.length + b.length - 1).fill(0);
+    for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++) r[i + j] += a[i] * b[j];
+    return r;
+  },
+  fromRoots(rs) {
+    let p = [[1, 0]];
+    for (const r of rs) {
+      const q = Array.from({ length: p.length + 1 }, () => [0, 0]);
+      for (let i = 0; i < p.length; i++) { q[i] = Cx.add(q[i], p[i]); q[i + 1] = Cx.sub(q[i + 1], Cx.mul(p[i], r)); }
+      p = q;
+    }
+    return p.map(c => Math.abs(c[0]) < 1e-13 ? 0 : c[0]);
+  },
+  evalR(p, x) { let v = 0; for (const c of p) v = v * x + c; return v; },
+  evalC(p, z) { let v = [0, 0]; for (const c of p) { v = Cx.mul(v, z); v[0] += c; } return v; },
+  deriv(p) { const n = p.length - 1; if (n <= 0) return [0]; return p.slice(0, -1).map((c, i) => c * (n - i)); },
+  roots(p, guess) {
+    p = Poly.trim(p.slice());
+    const n = p.length - 1;
+    if (n < 1) return [];
+    const a = p.map(c => c / p[0]);
+    if (n === 1) return [[-a[1], 0]];
+    if (n === 2) {
+      const b = a[1], c = a[2], disc = b * b - 4 * c;
+      if (disc >= 0) { const q = -0.5 * (b + (b >= 0 ? 1 : -1) * Math.sqrt(disc)); const r1 = q, r2 = q !== 0 ? c / q : 0; return [[r1, 0], [r2, 0]]; }
+      const w = Math.sqrt(-disc) / 2; return [[-b / 2, w], [-b / 2, -w]];
+    }
+    const da = Poly.deriv(a);
+    let z;
+    if (guess && guess.length === n) {
+      // warm start; a small asymmetric complex nudge breaks the real / conjugate symmetry
+      // that would otherwise trap the iteration near break points
+      let sc = 1e-3; guess.forEach(g => { sc = Math.max(sc, Math.abs(g[0]), Math.abs(g[1])); });
+      z = guess.map((g, i) => [g[0] + sc * 1e-4 * (0.37 + 0.29 * i), g[1] + sc * 1e-4 * (0.61 - 0.23 * i)]);
+    } else {
+      let R = 0; for (let i = 1; i <= n; i++) R = Math.max(R, Math.pow(Math.abs(a[i]), 1 / i));
+      R = Math.max(R, 1e-3);
+      const c0 = -a[1] / n;
+      z = []; for (let k = 0; k < n; k++) { const t = 2 * Math.PI * k / n + 0.4; z.push([c0 + R * Math.cos(t), R * Math.sin(t)]); }
+    }
+    for (let it = 0; it < 600; it++) {
+      let maxc = 0, sc = 0;
+      for (let k = 0; k < n; k++) {
+        const pk = Poly.evalC(a, z[k]);
+        if (pk[0] === 0 && pk[1] === 0) continue;
+        const dk = Poly.evalC(da, z[k]);
+        const ratio = Cx.div(pk, dk);
+        let s = [0, 0];
+        for (let j = 0; j < n; j++) if (j !== k) s = Cx.add(s, Cx.div([1, 0], Cx.sub(z[k], z[j])));
+        const w = Cx.div(ratio, Cx.sub([1, 0], Cx.mul(ratio, s)));
+        if (!isFinite(w[0]) || !isFinite(w[1])) { z[k] = [z[k][0] + 1e-6, z[k][1] + 1.3e-6]; maxc = 1; continue; }
+        z[k] = Cx.sub(z[k], w);
+        maxc = Math.max(maxc, Cx.abs(w)); sc = Math.max(sc, Cx.abs(z[k]));
+      }
+      if (maxc <= 1e-13 * (1 + sc)) break;
+    }
+    return z;
+  },
+  realRoots(p, tol = 1e-6) {
+    return Poly.roots(p).filter(z => Math.abs(z[1]) < tol * (1 + Math.abs(z[0]))).map(z => z[0]).sort((a, b) => a - b);
+  },
+};
+
+/* root matching (keeps branches continuous) */
+const _perms = {};
+function perms(n) {
+  if (_perms[n]) return _perms[n];
+  const out = [], a = [...Array(n).keys()];
+  const rec = k => { if (k === n) { out.push(a.slice()); return; } for (let i = k; i < n; i++) { [a[k], a[i]] = [a[i], a[k]]; rec(k + 1); [a[k], a[i]] = [a[i], a[k]]; } };
+  rec(0); return (_perms[n] = out);
+}
+function matchRoots(prev, next) {
+  const n = prev.length;
+  if (next.length !== n || n === 0) return next;
+  const d = prev.map(p => next.map(q => (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2));
+  if (n > 6) { // greedy
+    const used = new Set(), out = [];
+    for (let i = 0; i < n; i++) { let bj = -1, bd = Infinity; for (let j = 0; j < n; j++) if (!used.has(j) && d[i][j] < bd) { bd = d[i][j]; bj = j; } used.add(bj); out.push(next[bj]); }
+    return out;
+  }
+  let best = null, bc = Infinity;
+  for (const pm of perms(n)) { let c = 0; for (let i = 0; i < n && c < bc; i++) c += d[i][pm[i]]; if (c < bc) { bc = c; best = pm; } }
+  return best.map(j => next[j]);
+}
+
+/* Routh array (numeric) */
+function routh(c) {
+  c = Poly.trim(c);
+  const n = c.length - 1, w = Math.ceil((n + 1) / 2);
+  const r0 = [], r1 = [];
+  for (let i = 0; i <= n; i++) (i % 2 ? r1 : r0).push(c[i]);
+  while (r0.length < w) r0.push(0);
+  while (r1.length < w) r1.push(0);
+  const rows = [r0, r1]; let eps = false;
+  for (let i = 2; i <= n; i++) {
+    const A = rows[i - 2], B = rows[i - 1].slice();
+    if (Math.abs(B[0]) < 1e-12) { B[0] = 1e-9; eps = true; }
+    const R = [];
+    for (let j = 0; j < w; j++) R.push(j + 1 < w ? (B[0] * A[j + 1] - A[0] * (B[j + 1] || 0)) / B[0] : 0);
+    rows.push(R);
+  }
+  const first = rows.map(r => r[0]);
+  let changes = 0; for (let i = 1; i < first.length; i++) if (Math.sign(first[i]) !== Math.sign(first[i - 1]) && first[i] !== 0 && first[i - 1] !== 0) changes++;
+  return { rows: rows.slice(0, n + 1), first: first.slice(0, n + 1), changes, eps };
+}
+
+/* ---------------- linear algebra / simulation ---------------- */
+function matMul(A, B) {
+  const n = A.length, m = B[0].length, k = B.length, R = Array.from({ length: n }, () => new Array(m).fill(0));
+  for (let i = 0; i < n; i++) for (let l = 0; l < k; l++) { const a = A[i][l]; if (a) for (let j = 0; j < m; j++) R[i][j] += a * B[l][j]; }
+  return R;
+}
+function eye(n) { return Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))); }
+function expm(M) {
+  const n = M.length; let nrm = 0;
+  for (const r of M) nrm = Math.max(nrm, r.reduce((s, v) => s + Math.abs(v), 0));
+  const s = Math.max(0, Math.ceil(Math.log2(nrm || 1)) + 1);
+  const Ms = M.map(r => r.map(v => v / Math.pow(2, s)));
+  let E = eye(n), T = eye(n);
+  for (let k = 1; k <= 18; k++) { T = matMul(T, Ms).map(r => r.map(v => v / k)); E = E.map((r, i) => r.map((v, j) => v + T[i][j])); }
+  for (let i = 0; i < s; i++) E = matMul(E, E);
+  return E;
+}
+function tf2ss(num, den) {
+  den = Poly.trim(den); num = Poly.trim(num);
+  const n = den.length - 1, a = den.map(c => c / den[0]), b = num.map(c => c / den[0]);
+  const bb = new Array(Math.max(0, n + 1 - b.length)).fill(0).concat(b);
+  const d = bb[0];
+  const c = []; for (let i = 1; i <= n; i++) c.push(bb[i] - d * a[i]);
+  const A = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = 0; i < n - 1; i++) A[i][i + 1] = 1;
+  for (let j = 0; j < n; j++) A[n - 1][j] = -a[n - j];
+  const B = new Array(n).fill(0); if (n) B[n - 1] = 1;
+  const C = c.slice().reverse();
+  return { n, A, B, C, D: d };
+}
+/* exact step response (u = 1 for t >= 0) */
+function stepResponse(num, den, Tend, N = 700) {
+  const ss = tf2ss(num, den), n = ss.n, h = Tend / N;
+  const t = [], y = [];
+  if (n === 0) { for (let k = 0; k <= N; k++) { t.push(k * h); y.push(ss.D); } return { t, y }; }
+  const M = Array.from({ length: n + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) M[i][j] = ss.A[i][j] * h; M[i][n] = ss.B[i] * h; }
+  const E = expm(M);
+  let x = new Array(n).fill(0);
+  for (let k = 0; k <= N; k++) {
+    t.push(k * h);
+    let yy = ss.D; for (let i = 0; i < n; i++) yy += ss.C[i] * x[i];
+    y.push(yy);
+    const xn = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) { let v = E[i][n]; for (let j = 0; j < n; j++) v += E[i][j] * x[j]; xn[i] = isFinite(v) ? v : (v > 0 ? 1e300 : -1e300); }
+    x = xn;
+  }
+  return { t, y };
+}
+/* pick a sensible horizon from the closed-loop poles */
+function autoHorizon(den) {
+  const r = Poly.roots(den);
+  let maxRe = -Infinity, slow = Infinity, wmin = Infinity;
+  for (const z of r) { maxRe = Math.max(maxRe, z[0]); if (z[0] < -1e-9) slow = Math.min(slow, -z[0]); if (Math.abs(z[1]) > 1e-6) wmin = Math.min(wmin, Math.abs(z[1])); }
+  if (maxRe > 1e-6) return Math.min(30, Math.max(1, 5 / maxRe));
+  if (maxRe > -1e-6) return isFinite(wmin) ? Math.min(60, 6 * 2 * Math.PI / wmin) : 20;
+  return Math.min(120, Math.max(0.5, 6 / slow));
+}
+function stepInfo(t, y, yss) {
+  let imax = 0; for (let i = 1; i < y.length; i++) if (y[i] > y[imax]) imax = i;
+  const info = { peak: y[imax], Tp: t[imax], OS: yss ? (y[imax] - yss) / Math.abs(yss) * 100 : NaN };
+  const cross = lvl => { for (let i = 1; i < y.length; i++) if ((y[i - 1] - lvl) * (y[i] - lvl) <= 0 && y[i] !== y[i - 1]) return t[i - 1] + (lvl - y[i - 1]) / (y[i] - y[i - 1]) * (t[i] - t[i - 1]); return NaN; };
+  info.Tr = cross(0.9 * yss) - cross(0.1 * yss);
+  const band = 0.02 * Math.abs(yss);
+  let last = -1; for (let i = 0; i < y.length; i++) if (Math.abs(y[i] - yss) > band) last = i;
+  if (last === y.length - 1) info.Ts = NaN;
+  else if (last < 0) info.Ts = 0;
+  else { const i = last; const target = y[i] > yss ? yss + band : yss - band; info.Ts = t[i] + (target - y[i]) / (y[i + 1] - y[i]) * (t[i + 1] - t[i]); }
+  if (info.OS < 0.005) { info.OS = 0; }
+  return info;
+}
+
+/* ---------------- colours & canvas plotting ---------------- */
+const _col = {};
+function col(n) { return _col[n] || (_col[n] = (getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim() || "#fff")); }
+function rgba(hex, a) { const h = hex.replace("#", ""); const v = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16); return `rgba(${v >> 16 & 255},${v >> 8 & 255},${v & 255},${a})`; }
+function niceStep(range, target) { const raw = range / Math.max(1, target); const p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * p; }
+function prepCanvas(cv) {
+  const r = cv.getBoundingClientRect();
+  if (r.width < 4 || r.height < 4) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const W = r.width, H = r.height;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const ctx = cv.getContext("2d"); if (!ctx) return null;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  return { ctx, W, H };
+}
+const FONT_UI = '12px "IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
+function drawPlot(cv, cfg) {
+  const pc = prepCanvas(cv); if (!pc) return null;
+  const { ctx, W, H } = pc;
+  const pad = Object.assign({ l: 48, r: 12, t: 10, b: 30 }, cfg.pad || {});
+  let [x0, x1] = cfg.xlim, [y0, y1] = cfg.ylim;
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  if (cfg.equal) {
+    const sx = pw / (x1 - x0), sy = ph / (y1 - y0);
+    if (sx > sy) { const c = (x0 + x1) / 2, h = pw / sy / 2; x0 = c - h; x1 = c + h; }
+    else { const c = (y0 + y1) / 2, h = ph / sx / 2; y0 = c - h; y1 = c + h; }
+  }
+  const X = x => pad.l + (x - x0) / (x1 - x0) * pw;
+  const Y = y => pad.t + (y1 - y) / (y1 - y0) * ph;
+  const T = { ctx, X, Y, x0, x1, y0, y1, pad, W, H, pw, ph, sx: pw / (x1 - x0), sy: ph / (y1 - y0),
+    inv: (px, py) => [x0 + (px - pad.l) / pw * (x1 - x0), y1 - (py - pad.t) / ph * (y1 - y0)] };
+  ctx.font = FONT_UI; ctx.lineWidth = 1;
+  const xs = cfg.xstep || niceStep(x1 - x0, pw / 80), ys = cfg.ystep || niceStep(y1 - y0, ph / 48);
+  const dec = s => Math.max(0, -Math.floor(Math.log10(s) + 1e-9));
+  ctx.strokeStyle = "rgba(108,150,214,.10)"; ctx.fillStyle = col("faint");
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let v = Math.ceil(x0 / xs) * xs; v <= x1 + 1e-9 * xs; v += xs) {
+    const px = Math.round(X(v)) + .5; ctx.beginPath(); ctx.moveTo(px, pad.t); ctx.lineTo(px, pad.t + ph); ctx.stroke();
+    ctx.fillText(cfg.xfmt ? cfg.xfmt(v) : minus((Math.abs(v) < xs * 1e-6 ? 0 : v).toFixed(dec(xs))), px, pad.t + ph + 6);
+  }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let v = Math.ceil(y0 / ys) * ys; v <= y1 + 1e-9 * ys; v += ys) {
+    const py = Math.round(Y(v)) + .5; ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(pad.l + pw, py); ctx.stroke();
+    ctx.fillText(cfg.yfmt ? cfg.yfmt(v) : minus((Math.abs(v) < ys * 1e-6 ? 0 : v).toFixed(dec(ys))), pad.l - 6, py);
+  }
+  if (cfg.zeroAxes !== false) {
+    ctx.strokeStyle = "rgba(231,234,240,.38)";
+    if (y0 < 0 && y1 > 0 && !cfg.noYzero) { const py = Math.round(Y(0)) + .5; ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(pad.l + pw, py); ctx.stroke(); }
+    if (x0 < 0 && x1 > 0) { const px = Math.round(X(0)) + .5; ctx.beginPath(); ctx.moveTo(px, pad.t); ctx.lineTo(px, pad.t + ph); ctx.stroke(); }
+  }
+  ctx.strokeStyle = col("rule"); ctx.strokeRect(pad.l + .5, pad.t + .5, pw - 1, ph - 1);
+  ctx.fillStyle = col("graphite"); ctx.font = 'italic 14px "Newsreader", Georgia, serif';
+  if (cfg.xlabel) { ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(cfg.xlabel, pad.l + pw - 6, pad.t + ph - 4); }
+  if (cfg.ylabel) { ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(cfg.ylabel, pad.l + 6, pad.t + 4); }
+  ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, pw, ph); ctx.clip();
+  (cfg.layers || []).forEach(L => L && L(T));
+  ctx.restore();
+  (cfg.after || []).forEach(L => L && L(T));
+  cv._T = T;
+  return T;
+}
+const Lyr = {
+  line(xs, ys, o = {}) {
+    return T => {
+      const { ctx, X, Y } = T, lo = T.y0 - 20 * (T.y1 - T.y0), hi = T.y1 + 20 * (T.y1 - T.y0);
+      ctx.save(); ctx.strokeStyle = o.color || col("chalk"); ctx.lineWidth = o.w || 1.8; ctx.setLineDash(o.dash || []); ctx.globalAlpha = o.alpha ?? 1; ctx.lineJoin = "round";
+      ctx.beginPath(); let pen = false;
+      for (let i = 0; i < xs.length; i++) {
+        const y = ys[i]; if (!isFinite(y) || !isFinite(xs[i])) { pen = false; continue; }
+        const px = X(xs[i]), py = Y(Math.max(lo, Math.min(hi, y)));
+        if (!pen) { ctx.moveTo(px, py); pen = true; } else ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.restore();
+    };
+  },
+  fn(f, o = {}) { return T => { const xs = [], ys = []; const n = o.n || 500; for (let i = 0; i <= n; i++) { const x = T.x0 + (T.x1 - T.x0) * i / n; xs.push(x); ys.push(f(x)); } Lyr.line(xs, ys, o)(T); }; },
+  hline(y, o = {}) { return T => { const { ctx, Y } = T; ctx.save(); ctx.strokeStyle = o.color || col("graphite"); ctx.lineWidth = o.w || 1; ctx.setLineDash(o.dash || [5, 4]); ctx.beginPath(); ctx.moveTo(T.pad.l, Y(y)); ctx.lineTo(T.pad.l + T.pw, Y(y)); ctx.stroke(); ctx.restore(); if (o.label) Lyr.text(T.x1, y, o.label, { color: o.color, align: "right", dy: -8, dx: -6 })(T); }; },
+  vline(x, o = {}) { return T => { const { ctx, X } = T; ctx.save(); ctx.strokeStyle = o.color || col("graphite"); ctx.lineWidth = o.w || 1; ctx.setLineDash(o.dash || [5, 4]); ctx.beginPath(); ctx.moveTo(X(x), T.pad.t); ctx.lineTo(X(x), T.pad.t + T.ph); ctx.stroke(); ctx.restore(); if (o.label) Lyr.text(x, T.y1, o.label, { color: o.color, align: "left", dx: 5, dy: 12 })(T); }; },
+  band(ya, yb, o = {}) { return T => { const { ctx, Y } = T; ctx.fillStyle = o.color || "rgba(127,224,176,.08)"; ctx.fillRect(T.pad.l, Y(yb), T.pw, Y(ya) - Y(yb)); }; },
+  pole(x, y, o = {}) { return T => { const { ctx } = T, px = T.X(x), py = T.Y(y), s = o.size || 7; ctx.save(); ctx.strokeStyle = o.color || col("coral"); ctx.lineWidth = o.w || 2.4; ctx.globalAlpha = o.alpha ?? 1; ctx.beginPath(); ctx.moveTo(px - s, py - s); ctx.lineTo(px + s, py + s); ctx.moveTo(px - s, py + s); ctx.lineTo(px + s, py - s); ctx.stroke(); ctx.restore(); }; },
+  zero(x, y, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.globalAlpha = o.alpha ?? 1; ctx.beginPath(); ctx.arc(T.X(x), T.Y(y), o.size || 6.5, 0, 7); ctx.fillStyle = col("ink-2"); ctx.fill(); ctx.strokeStyle = o.color || col("sky"); ctx.lineWidth = o.w || 2.2; ctx.stroke(); ctx.restore(); }; },
+  dot(x, y, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.beginPath(); ctx.arc(T.X(x), T.Y(y), o.r || 5, 0, 7); ctx.fillStyle = o.color || col("amber"); ctx.fill(); if (o.ring !== false) { ctx.lineWidth = 2; ctx.strokeStyle = col("ink"); ctx.stroke(); } ctx.restore(); }; },
+  text(x, y, s, o = {}) { return T => { const { ctx } = T; ctx.save(); ctx.font = o.font || FONT_UI; ctx.fillStyle = o.color || col("graphite"); ctx.textAlign = o.align || "left"; ctx.textBaseline = o.base || "middle"; ctx.fillText(s, T.X(x) + (o.dx || 0), T.Y(y) + (o.dy || 0)); ctx.restore(); }; },
+};
+/* keep canvases crisp and redrawn when they become visible / resize */
+const _ro = ("ResizeObserver" in window) ? new ResizeObserver(es => es.forEach(e => e.target._redraw && e.target._redraw())) : null;
+function livePlot(cv, drawFn) { cv._redraw = drawFn; if (_ro) _ro.observe(cv); drawFn(); return cv; }
+window.addEventListener("tabshown", () => $$(".panel.active canvas").forEach(c => c._redraw && c._redraw()));
+function onHover(cv, cb) {
+  const h = e => { const T = cv._T; if (!T) return; const r = cv.getBoundingClientRect(); const px = e.clientX - r.left, py = e.clientY - r.top; if (px < T.pad.l || px > T.pad.l + T.pw || py < T.pad.t || py > T.pad.t + T.ph) { cb(null); return; } cb(T.inv(px, py), px, py); };
+  cv.addEventListener("pointermove", h); cv.addEventListener("pointerleave", () => cb(null));
+}
+
+/* ---------------- MathJax helpers ---------------- */
+function typeset(el) {
+  const MJ = window.MathJax;
+  if (MJ && MJ.typesetPromise && MJ.startup && MJ.startup.promise) {
+    MJ.startup.promise = MJ.startup.promise.then(() => { if (MJ.typesetClear) MJ.typesetClear([el]); return MJ.typesetPromise([el]); }).catch(() => {});
+  }
+}
+function setTeX(el, tex, display = false) { el.textContent = display ? `\\[${tex}\\]` : `\\(${tex}\\)`; typeset(el); }
+
+/* ---------------- SVG block diagrams ---------------- */
+function cw(c) {
+  if (/[0-9]/.test(c)) return .5;
+  if (/[a-z]/.test(c)) return ({ m: .72, w: .66, i: .29, j: .29, l: .29, t: .31, f: .31, r: .39, s: .40 })[c] || .48;
+  if (/[A-Z]/.test(c)) return ({ G: .72, M: .86, W: .9, I: .36 })[c] || .65;
+  if (c === " ") return .26;
+  if ("+−=".includes(c)) return .58;
+  if ("()[]".includes(c)) return .34;
+  return .3;
+}
+function parseMarkup(str) {
+  const out = []; let i = 0;
+  const push = (t, sh) => { for (const ch of t) { const it = /[A-Za-z]/.test(ch); const last = out[out.length - 1]; if (last && last.it === it && last.sh === sh) last.t += ch; else out.push({ t: ch, it, sh }); } };
+  while (i < str.length) {
+    const c = str[i];
+    if (c === "^" || c === "_") {
+      const sh = c === "^" ? 1 : -1; i++; let g;
+      if (str[i] === "{") { const j = str.indexOf("}", i); g = str.slice(i + 1, j); i = j + 1; } else { g = str[i]; i++; }
+      push(g.replace(/-/g, "−"), sh);
+    } else { push(c === "-" ? "−" : c, 0); i++; }
+  }
+  return out;
+}
+function mwidth(str, fs = 17) { return parseMarkup(str).reduce((w, p) => w + [...p.t].reduce((a, c) => a + cw(c), 0) * (p.sh ? .72 : 1), 0) * fs; }
+function mtspans(str) {
+  let cur = 0, out = "";
+  for (const p of parseMarkup(str)) {
+    const tg = p.sh === 1 ? -7 : p.sh === -1 ? 4 : 0, dy = tg - cur; cur = tg;
+    out += `<tspan${dy ? ` dy="${dy}"` : ""}${p.sh ? ' font-size="0.72em"' : ""}${p.it ? ' font-style="italic"' : ""}>${esc(p.t)}</tspan>`;
+  }
+  if (cur) out += `<tspan dy="${-cur}"> </tspan>`;
+  return out;
+}
+const F = (n, d) => ({ n, d });
+function lmeasure(L, fs = 17) {
+  if (typeof L === "string") return { w: mwidth(L, fs), frac: false };
+  if (Array.isArray(L)) { let w = 0, fr = false; for (const x of L) { const m = lmeasure(x, fs); w += m.w; fr = fr || m.frac; } return { w, frac: fr }; }
+  return { w: Math.max(mwidth(L.n, fs), mwidth(L.d, fs)) + 8, frac: true };
+}
+function lrender(L, cx, cy, cls = "bd-t", fs = 17) {
+  if (typeof L === "string") return `<text x="${cx}" y="${cy + fs * .34}" text-anchor="middle" class="${cls}">${mtspans(L)}</text>`;
+  if (Array.isArray(L)) { const tot = lmeasure(L, fs).w; let x = cx - tot / 2, s = ""; for (const it of L) { const m = lmeasure(it, fs); s += lrender(it, x + m.w / 2, cy, cls, fs); x += m.w; } return s; }
+  const m = lmeasure(L, fs);
+  return `<text x="${cx}" y="${cy - 5}" text-anchor="middle" class="${cls}">${mtspans(L.n)}</text><line class="bd-frac" x1="${cx - m.w / 2 + 1}" y1="${cy}" x2="${cx + m.w / 2 - 1}" y2="${cy}"/><text x="${cx}" y="${cy + 17}" text-anchor="middle" class="${cls}">${mtspans(L.d)}</text>`;
+}
+class BD {
+  constructor(w, h) { this.w = w; this.h = h; this.s = ""; }
+  _a(o) { const c = []; if (o.hl) c.push("hl-" + o.hl); if (o.dim) c.push("dim"); return { c: c.join(" "), t: o.tags ? ` data-tags="${o.tags}"` : "" }; }
+  block(x, y, L, o = {}) {
+    const m = lmeasure(L), w = o.w || Math.max(44, Math.round(m.w + 26)), h = o.h || (m.frac ? 58 : 40), a = this._a(o);
+    this.s += `<g class="bd-block ${a.c}"${a.t}><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="2"/>${lrender(L, x, y)}</g>`;
+    return { x, y, w, h, l: [x - w / 2, y], r: [x + w / 2, y], t: [x, y - h / 2], b: [x, y + h / 2] };
+  }
+  sum(x, y, signs = {}, o = {}) {
+    const r = 13, k = r * .7071, a = this._a(o);
+    let s = `<g class="bd-sum ${a.c}"${a.t}><circle cx="${x}" cy="${y}" r="${r}"/><line x1="${x - k}" y1="${y - k}" x2="${x + k}" y2="${y + k}"/><line x1="${x - k}" y1="${y + k}" x2="${x + k}" y2="${y - k}"/>`;
+    const pos = { l: [x - r - 3, y - 7, "end"], t: [x + 6, y - r - 3, "start"], b: [x - 6, y + r + 14, "end"], r: [x + r + 4, y - 7, "start"], br: [x + r + 3, y + r + 9, "start"], tr: [x + r + 3, y - r - 2, "start"] };
+    for (const [kk, v] of Object.entries(signs)) { const p = pos[kk]; s += `<text class="bd-sign" x="${p[0]}" y="${p[1]}" text-anchor="${p[2]}">${v === "-" ? "−" : v}</text>`; }
+    this.s += s + "</g>";
+    return { x, y, l: [x - r, y], r: [x + r, y], t: [x, y - r], b: [x, y + r], br: [x + k, y + k], tr: [x + k, y - k] };
+  }
+  wire(pts, o = {}) {
+    const a = this._a(o); pts = pts.map(p => p.slice());
+    if (o.arrow !== false) {
+      const [x2, y2] = pts[pts.length - 1], [x1, y1] = pts[pts.length - 2];
+      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9.5, W = 4.4;
+      const bx = x2 - L * Math.cos(ang), by = y2 - L * Math.sin(ang), px = -Math.sin(ang) * W, py = Math.cos(ang) * W;
+      pts[pts.length - 1] = [x2 - 6 * Math.cos(ang), y2 - 6 * Math.sin(ang)];
+      this.s += `<polyline class="bd-wire ${a.c}"${a.t} points="${pts.map(p => p.join(",")).join(" ")}"/>`;
+      this.s += `<polygon class="bd-head ${a.c}"${a.t} points="${x2},${y2} ${bx + px},${by + py} ${bx - px},${by - py}"/>`;
+    } else this.s += `<polyline class="bd-wire ${a.c}"${a.t} points="${pts.map(p => p.join(",")).join(" ")}"/>`;
+  }
+  dot(p, o = {}) { const a = this._a(o); this.s += `<circle class="bd-dot ${a.c}"${a.t} cx="${p[0]}" cy="${p[1]}" r="3.6"/>`; }
+  sig(x, y, L, o = {}) { this.s += `<g class="${this._a(o).c}">${lrender(L, x, y, "bd-sig", 16)}</g>`; }
+  note(x, y, str, anchor = "middle") { this.s += `<text class="note" x="${x}" y="${y}" text-anchor="${anchor}">${esc(str)}</text>`; }
+  svg(extra = "") { return `<svg class="bd ${extra}" viewBox="0 0 ${this.w} ${this.h}" style="max-width:${Math.round(this.w * 1.3)}px" role="img" aria-label="Block diagram">${this.s}</svg>`; }
+}
+/* unity-feedback loop helper */
+function bdLoop(G, o = {}) {
+  const d = new BD(o.w || 560, o.h || 170), y = 60;
+  d.sig(34, y - 20, "R(s)");
+  const s = d.sum(92, y, { l: "+", b: "-" }, { hl: o.hlLoop });
+  d.wire([[14, y], s.l]);
+  const b = d.block(o.bx || 250, y, G, { hl: o.hl, w: o.bw });
+  d.wire([s.r, b.l], { hl: o.hlLoop });
+  const px = o.px || (b.r[0] + 60); d.wire([b.r, [px, y]], { arrow: false, hl: o.hlLoop }); d.dot([px, y], { hl: o.hlLoop });
+  d.wire([[px, y], [d.w - 14, y]]); d.sig(d.w - 44, y - 20, "C(s)");
+  if (o.E) d.sig((s.r[0] + b.l[0]) / 2, y - 18, "E(s)");
+  d.wire([[px, y], [px, y + 72], [92, y + 72], s.b], { hl: o.hlLoop });
+  return d.svg();
+}
+function bdSingle(L, o = {}) {
+  const d = new BD(o.w || 560, o.h || 110), y = 55;
+  d.sig(34, y - 20, "R(s)");
+  const b = d.block(d.w / 2, y, L, { hl: o.hl || "a", w: o.bw });
+  d.wire([[14, y], b.l]); d.wire([b.r, [d.w - 14, y]]); d.sig(d.w - 44, y - 20, "C(s)");
+  return d.svg();
+}
+
+/* ---------------- visual registry, stepper, tabs ---------------- */
+const VIS = {};
+const STEPPERS = [];
+function initStepper(root, opts = {}) {
+  const steps = $$(":scope > .step-body > .step", root);
+  const nav = $(".steps-nav", root), visHost = $(".step-vis", root);
+  steps.forEach((s, i) => {
+    const b = document.createElement("button"); b.className = "pill"; b.type = "button";
+    b.innerHTML = `<span class="k">${i + 1}</span>${s.dataset.title}`; b.onclick = () => go(i); nav.appendChild(b);
+    const h = document.createElement("h4"); h.innerHTML = `<span class="sn">${i + 1}</span>${s.dataset.title}`; s.prepend(h);
+  });
+  const cache = {};
+  if (visHost) steps.forEach(s => {
+    const id = s.dataset.vis; if (!id || cache[id]) return;
+    const d = document.createElement("div"); d.className = "vis"; visHost.appendChild(d); cache[id] = d;
+    const v = VIS[id]; if (typeof v === "function") { const r = v(d); if (typeof r === "string") d.innerHTML = r; }
+    if (s.dataset.cap) d.insertAdjacentHTML("beforeend", `<div class="caption">${s.dataset.cap}</div>`);
+  });
+  const ctl = document.createElement("div"); ctl.className = "step-ctl";
+  ctl.innerHTML = `<button class="btn ghost prev" type="button">Previous step</button><button class="btn primary next" type="button">Next step</button><span class="src cnt"></span><span style="flex:1"></span><label class="chk"><input type="checkbox" class="allc"> Show all steps as one page</label>`;
+  root.appendChild(ctl);
+  let cur = 0;
+  const pills = $$(".pill", nav);
+  function go(i) {
+    cur = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach((s, j) => s.classList.toggle("on", j === cur));
+    pills.forEach((p, j) => { p.classList.toggle("on", j === cur); p.classList.toggle("done", j < cur); });
+    if (visHost) { Object.values(cache).forEach(v => v.classList.remove("on")); let j = cur; while (j >= 0 && !steps[j].dataset.vis) j--; if (j >= 0) cache[steps[j].dataset.vis].classList.add("on"); }
+    $(".prev", ctl).disabled = cur === 0; $(".next", ctl).disabled = cur === steps.length - 1;
+    $(".cnt", ctl).textContent = `Step ${cur + 1} of ${steps.length}`;
+    if (opts.onStep) opts.onStep(steps[cur], cur);
+    ACTIVE_STEPPER = api;
+    requestAnimationFrame(() => $$("canvas", visHost || root).forEach(c => c._redraw && c._redraw()));
+  }
+  $(".prev", ctl).onclick = () => go(cur - 1);
+  $(".next", ctl).onclick = () => go(cur + 1);
+  $(".allc", ctl).onchange = e => root.classList.toggle("all", e.target.checked);
+  const api = { go, root, get cur() { return cur; } };
+  root.addEventListener("pointerdown", () => { ACTIVE_STEPPER = api; });
+  STEPPERS.push(api); go(0);
+  return api;
+}
+let ACTIVE_STEPPER = null;
+document.addEventListener("keydown", e => {
+  if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName)) return;
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  let st = ACTIVE_STEPPER;
+  if (!st || !st.root.closest(".panel.active") || st.root.offsetParent === null) st = STEPPERS.find(s => s.root.closest(".panel.active") && s.root.offsetParent !== null);
+  if (!st) return;
+  st.go(st.cur + (e.key === "ArrowRight" ? 1 : -1)); e.preventDefault();
+});
+function initTabs() {
+  const tabs = $$(".tab"), panels = $$(".panel");
+  function show(id, setHash) {
+    tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.for === id)));
+    panels.forEach(p => p.classList.toggle("active", p.id === id));
+    if (setHash) { try { history.replaceState(null, "", "#show-" + id); } catch (e) {} }
+    window.dispatchEvent(new Event("tabshown"));
+  }
+  tabs.forEach(t => t.addEventListener("click", () => {
+    show(t.dataset.for, true);
+    const bar = $(".tabbar"); if (window.scrollY > bar.offsetTop) window.scrollTo({ top: bar.offsetTop });
+  }));
+  const h = location.hash.replace("#show-", "");
+  show(panels.some(p => p.id === h) ? h : panels[0].id, false);
+}
+
+/* ---------------- root-locus widget ---------------- */
+class RootLocus {
+  constructor(host, o) {
+    this.o = Object.assign({ Kmin: 1e-4, Kmax: 1e5, Ks: [0.01, 1000], K0: 1, drag: false, step: false }, o);
+    this.layers = { pz: 1, seg: 1, asym: 1, brk: 1, ang: 1, locus: 1, dots: 1, cross: 1 };
+    this.host = host; this.K = this.o.K0; this.hover = null; this.onK = [];
+    host.innerHTML = `
+      <div class="plotbox"><div class="pt"><span class="ttl">s-plane · root locus</span><span class="legend">
+        <span><svg width="12" height="12"><path d="M2 2L10 10M2 10L10 2" stroke="${col("coral")}" stroke-width="2.2"/></svg>open-loop pole</span>
+        <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.3" fill="none" stroke="${col("sky")}" stroke-width="2"/></svg>zero</span>
+        <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="${col("amber")}"/></svg>closed-loop pole at K</span></span></div>
+        <canvas class="tall"></canvas></div>
+      <div class="rl-ctl"><button class="btn ghost play" type="button">Sweep K</button><span class="kval"></span>
+        <input type="range" min="0" max="1000" step="1" aria-label="Gain K"><input type="number" class="kin" step="any" min="0" aria-label="Type a value of K"></div>
+      <div class="rl-hover"></div>
+      <div class="rl-read"></div>
+      ${this.o.step ? `<div class="plotbox" style="margin-top:12px"><div class="pt"><span>Closed-loop step response at this K</span><span class="stat"></span></div><canvas class="short"></canvas></div>` : ""}`;
+    this.cv = $("canvas.tall", host); this.sl = $("input[type=range]", host); this.kin = $(".kin", host);
+    this.sl.addEventListener("input", () => this.setK(this.v2K(+this.sl.value), "slider"));
+    this.kin.addEventListener("change", () => { const v = parseFloat(this.kin.value); if (isFinite(v) && v >= 0) this.setK(v, "input"); });
+    $(".play", host).addEventListener("click", () => this.sweep());
+    livePlot(this.cv, () => this.draw());
+    if (this.o.step) { this.cvs = $("canvas.short", host); livePlot(this.cvs, () => this.drawStep()); }
+    onHover(this.cv, (p) => { this.hover = p; this.hoverText(); if (!this._dragging) this.draw(); });
+    if (this.o.drag) this.enableDrag();
+    this.setSystem(this.o.poles, this.o.zeros, this.o.view);
+  }
+  v2K(v) { const [a, b] = this.o.Ks; return v <= 0 ? 0 : a * Math.pow(b / a, (v - 1) / 999); }
+  K2v(K) { const [a, b] = this.o.Ks; if (K <= 0) return 0; return Math.max(1, Math.min(1000, 1 + 999 * Math.log(K / a) / Math.log(b / a))); }
+  setSystem(poles, zeros, view, opts = {}) {
+    this.P = poles.map(p => ({ re: p[0], im: Math.abs(p[1] || 0) }));
+    this.Z = zeros.map(p => ({ re: p[0], im: Math.abs(p[1] || 0) }));
+    this.fixedView = view ? { x: view.x.slice(), y: view.y.slice() } : null;
+    if (opts.Ks) this.o.Ks = opts.Ks;
+    if (opts.K0 != null) this.K = opts.K0;
+    this.recalc(); this.setK(this.K, "sys");
+  }
+  expand(items) { const r = []; for (const it of items) { r.push([it.re, it.im]); if (it.im > 1e-12) r.push([it.re, -it.im]); } return r; }
+  recalc() {
+    this.pr = this.expand(this.P); this.zr = this.expand(this.Z);
+    this.D = Poly.fromRoots(this.pr); this.N = Poly.fromRoots(this.zr);
+    this.n = this.pr.length; this.m = this.zr.length;
+    this.keypoints();
+    this.view = this.fixedView || this.autoView();
+    this.locus(); this.crossings();
+  }
+  charPoly(K) { return Poly.add(this.D, Poly.scale(this.N, K)); }
+  Kat(s) { const d = Poly.evalC(this.D, s), n = Poly.evalC(this.N, s); return Cx.abs(d) / Cx.abs(n); }
+  keypoints() {
+    const D = this.D, N = this.N, n = this.n, m = this.m;
+    const Q = Poly.add(Poly.mul(Poly.deriv(D), N), Poly.scale(Poly.mul(D, Poly.deriv(N)), -1));
+    const KofS = x => { const nn = Poly.evalR(N, x); return Math.abs(nn) < 1e-12 ? Infinity : -Poly.evalR(D, x) / nn; };
+    this.KofS = KofS;
+    this.brk = [];
+    if (Poly.trim(Q).length > 1) for (const x of Poly.realRoots(Q, 1e-5)) {
+      const K = KofS(x); if (!(K > 1e-9) || !isFinite(K)) continue;
+      const h = 1e-4 * (1 + Math.abs(x)), a = KofS(x - h), b = KofS(x + h);
+      const type = (K > a && K > b) ? "breakaway" : (K < a && K < b) ? "break-in" : "break point";
+      if (!this.brk.some(q => Math.abs(q.s - x) < 1e-6)) this.brk.push({ s: x, K, type });
+    }
+    this.asym = null;
+    if (n > m) {
+      const sp = this.pr.reduce((a, z) => a + z[0], 0), sz = this.zr.reduce((a, z) => a + z[0], 0);
+      const q = n - m; this.asym = { c: (sp - sz) / q, ang: [...Array(q).keys()].map(k => (2 * k + 1) * Math.PI / q) };
+    }
+    const deg = r => r * 180 / Math.PI, norm = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
+    this.angles = [];
+    for (const it of this.P) if (it.im > 1e-9) {
+      const p = [it.re, it.im]; let a = 180; let dup = false;
+      this.pr.forEach(q => { if (q === undefined) return; const d = Cx.sub(p, q); if (Cx.abs(d) < 1e-9) return; a -= deg(Cx.arg(d)); });
+      this.zr.forEach(z => { const d = Cx.sub(p, z); if (Cx.abs(d) < 1e-9) { dup = true; return; } a += deg(Cx.arg(d)); });
+      if (!dup) this.angles.push({ at: p, kind: "departure", ang: norm(a) });
+    }
+    for (const it of this.Z) if (it.im > 1e-9) {
+      const z = [it.re, it.im]; let a = 180;
+      this.pr.forEach(p => { a += deg(Cx.arg(Cx.sub(z, p))); });
+      this.zr.forEach(q => { const d = Cx.sub(z, q); if (Cx.abs(d) < 1e-9) return; a -= deg(Cx.arg(d)); });
+      this.angles.push({ at: z, kind: "arrival", ang: norm(a) });
+    }
+  }
+  autoView() {
+    const xs = [0], ys = [0];
+    [...this.pr, ...this.zr].forEach(z => { xs.push(z[0]); ys.push(Math.abs(z[1])); });
+    this.brk.forEach(b => xs.push(b.s));
+    const xmin = Math.min(...xs), xmax = Math.max(...xs), ym = Math.max(...ys);
+    const span = Math.max(xmax - xmin, 2 * ym, 2), pad = .35 * span + .6;
+    return { x: [xmin - pad, xmax + pad], y: [-(ym + pad), ym + pad] };
+  }
+  locus() {
+    const vw = this.view, span = Math.max(vw.x[1] - vw.x[0], vw.y[1] - vw.y[0]), tol = span * .01;
+    const cx = (vw.x[0] + vw.x[1]) / 2, cy = 0, far = span * 3;
+    const inView = z => Math.abs(z[0] - cx) < far && Math.abs(z[1] - cy) < far;
+    const deg = Poly.trim(this.charPoly(1)).length - 1;
+    const solve = (K, g) => matchRoots(g, Poly.roots(this.charPoly(K), g));
+    const br = Array.from({ length: deg }, () => []), Kl = [];
+    const push = (K, r) => { Kl.push(K); r.forEach((z, i) => br[i].push(z)); };
+    let prev = this.pr.map(p => p.slice());
+    if (prev.length !== deg) prev = Poly.roots(this.charPoly(this.o.Kmin));
+    push(0, prev);
+    const rec = (Ka, ra, Kb, rb, depth) => {
+      let md = 0;
+      for (let i = 0; i < ra.length; i++) if (inView(ra[i]) || inView(rb[i])) md = Math.max(md, Math.hypot(ra[i][0] - rb[i][0], ra[i][1] - rb[i][1]));
+      if (md > tol && depth < 8 && budget-- > 0) {
+        const Km = Ka > 0 ? Math.sqrt(Ka * Kb) : Kb / 8, rm = solve(Km, ra);
+        rec(Ka, ra, Km, rm, depth + 1); push(Km, rm); rec(Km, rm, Kb, rb, depth + 1);
+      }
+    };
+    const NS = 360, a = this.o.Kmin, b = this.o.Kmax;
+    let Kp = 0, budget = 6000;
+    for (let k = 0; k <= NS; k++) {
+      const K = a * Math.pow(b / a, k / NS), rb = solve(K, prev);
+      rec(Kp, prev, K, rb, 0); push(K, rb); prev = rb; Kp = K;
+    }
+    this.branches = br; this.Klist = Kl;
+  }
+  crossings() {
+    this.cross = []; this.onAxis = false;
+    const br = this.branches, Kl = this.Klist, eps = 1e-7;
+    let axisCount = 0, total = 0;
+    br.forEach((b, i) => {
+      let last = Math.abs(b[0][0]) > eps ? 0 : -1;
+      for (let j = 1; j < b.length; j++) {
+        total++; if (Math.abs(b[j][0]) < 1e-6 && Math.abs(b[j][1]) > 1e-6) axisCount++;
+        if (Math.abs(b[j][0]) <= eps) continue;
+        if (last < 0) { last = j; continue; }
+        const jl = last; last = j;
+        const ra = b[jl][0], rb = b[j][0];
+        if ((ra < -eps && rb > eps) || (ra > eps && rb < -eps)) {
+          let Ka = Kl[jl], Kb = Kl[j], setA = br.map(x => x[jl]);
+          let s = null;
+          for (let it = 0; it < 50; it++) {
+            const Km = (Ka + Kb) / 2, rm = matchRoots(setA, Poly.roots(this.charPoly(Km), setA));
+            if (Math.sign(rm[i][0]) === Math.sign(ra)) { Ka = Km; setA = rm; } else Kb = Km;
+            s = rm[i];
+          }
+          const K = (Ka + Kb) / 2, w = Math.abs(s[1]);
+          if (!this.cross.some(c => Math.abs(c.K - K) < 1e-6 * (1 + K) && Math.abs(c.w - w) < 1e-4)) this.cross.push({ K, w, dir: rb > ra ? "into RHP" : "into LHP" });
+        }
+      }
+    });
+    this.onAxis = total > 0 && axisCount / total > .5;
+  }
+  setLayers(obj) { this.layers = Object.assign({ pz: 1, seg: 0, asym: 0, brk: 0, ang: 0, locus: 0, dots: 0, cross: 0 }, obj); this.draw(); this.readout(); }
+  setK(K, src) {
+    this.K = Math.max(0, K);
+    this.cl = this.K === 0 ? this.pr.map(p => p.slice()) : Poly.roots(this.charPoly(this.K));
+    if (src !== "slider") this.sl.value = this.K2v(this.K);
+    if (src !== "input") this.kin.value = +this.K.toPrecision(4);
+    $(".kval", this.host).textContent = "K = " + fmt(this.K, this.K < 1 ? 4 : 3);
+    this.draw(); this.readout(); if (this.o.step) this.drawStep();
+    this.onK.forEach(f => f(this.K, this));
+  }
+  status() {
+    const mx = Math.max(...this.cl.map(z => z[0]));
+    if (this.K === 0) return { t: "open loop (K = 0)", c: "mid" };
+    if (mx < -1e-7) return { t: "stable", c: "ok" };
+    if (mx <= 1e-6) return { t: "marginally stable", c: "mid" };
+    return { t: "unstable", c: "bad" };
+  }
+  readout() {
+    const st = this.status(), L = this.layers;
+    const cl = this.cl.filter(z => z[1] >= -1e-9).sort((a, b) => b[0] - a[0]).map(z => { const t = fmtC(z, 3); return Math.abs(z[1]) > 1e-9 ? (Math.abs(z[0]) < 5e-4 ? "±j" + fmt(Math.abs(z[1]), 3) : t.replace("+ j", "± j")) : t; }).join(", ");
+    let h = `<div>Closed-loop poles<br><b>${cl || "—"}</b></div><div>Status<br><span class="badge ${st.c}">${st.t}</span></div>`;
+    if (L.brk && this.brk.length) h += `<div>Break points<br><b>${this.brk.map(b => `${b.type} σ = ${fmt(b.s, 3)} (K = ${fmt(b.K, 3)})`).join("<br>")}</b></div>`;
+    if (L.cross && this.cross.length) h += `<div>jω-axis crossings<br><b>${this.cross.map(c => c.w < 1e-4 ? `s = 0 at K = ${fmt(c.K, 3)}` : `s = ±j${fmt(c.w, 3)} at K = ${fmt(c.K, 3)}`).join("<br>")}</b></div>`;
+    if (L.asym && this.asym) h += `<div>Asymptotes<br><b>σ<sub>a</sub> = ${fmt(this.asym.c, 3)}, θ = ${this.asym.ang.map(a => fmt(a * 180 / Math.PI, 1) + "°").join(", ")}</b></div>`;
+    if (L.ang && this.angles.length) h += `<div>Departure / arrival<br><b>${this.angles.map(a => `${a.kind} at ${fmtC(a.at, 2)}: ${fmt(a.ang, 1)}°`).join("<br>")}</b></div>`;
+    $(".rl-read", this.host).innerHTML = h;
+  }
+  hoverText() {
+    const el = $(".rl-hover", this.host);
+    if (!this.hover) { el.textContent = this.o.drag ? "Drag a pole or zero to move it. Hover anywhere to test the angle condition." : "Hover over the s-plane to test the angle condition ∠G(s) = ±180°."; return; }
+    const s = this.hover, n = Poly.evalC(this.N, s), d = Poly.evalC(this.D, s);
+    let ang = (Cx.arg(n) - Cx.arg(d)) * 180 / Math.PI; ang = ((ang + 180) % 360 + 360) % 360 - 180;
+    const on = Math.abs(Math.abs(ang) - 180) < 2.5;
+    el.innerHTML = `s = ${fmtC(s, 2)} &nbsp; ∠G(s) = ${fmt(ang, 1)}° &nbsp; K = |D(s)|/|N(s)| = ${fmt(Cx.abs(d) / Cx.abs(n), 3)} ${on ? '&nbsp;<span class="badge ok">on the locus</span>' : ""}`;
+  }
+  draw() {
+    if (!this.branches) return;
+    const L = this.layers, self = this;
+    drawPlot(this.cv, {
+      xlim: this.view.x, ylim: this.view.y, equal: true, xlabel: "σ", ylabel: "jω", layers: [
+        L.seg && (T => {
+          const reals = [...this.pr, ...this.zr].filter(z => Math.abs(z[1]) < 1e-9).map(z => z[0]).sort((a, b) => a - b);
+          const pts = [T.x0 - 1e3, ...reals, T.x1 + 1e3]; const { ctx } = T;
+          ctx.save(); ctx.strokeStyle = rgba(col("amber"), .45); ctx.lineWidth = 9; ctx.lineCap = "butt";
+          for (let i = 0; i < pts.length - 1; i++) {
+            const mid = (pts[i] + pts[i + 1]) / 2, cnt = reals.filter(r => r > mid).length;
+            if (cnt % 2 === 1 && pts[i + 1] - pts[i] > 1e-9) { ctx.beginPath(); ctx.moveTo(T.X(pts[i]), T.Y(0)); ctx.lineTo(T.X(pts[i + 1]), T.Y(0)); ctx.stroke(); }
+          }
+          ctx.restore();
+        }),
+        L.asym && this.asym && (T => {
+          const { ctx } = T, a = this.asym, R = 4 * Math.max(T.x1 - T.x0, T.y1 - T.y0);
+          ctx.save(); ctx.strokeStyle = col("graphite"); ctx.setLineDash([6, 5]); ctx.lineWidth = 1.2;
+          a.ang.forEach(t => { ctx.beginPath(); ctx.moveTo(T.X(a.c), T.Y(0)); ctx.lineTo(T.X(a.c + R * Math.cos(t)), T.Y(R * Math.sin(t))); ctx.stroke(); });
+          ctx.setLineDash([]); ctx.fillStyle = col("graphite"); ctx.beginPath(); ctx.arc(T.X(a.c), T.Y(0), 3.5, 0, 7); ctx.fill(); ctx.restore();
+          Lyr.text(a.c, 0, "σa = " + fmt(a.c, 2), { dy: -12, align: "center" })(T);
+        }),
+        L.locus && (T => {
+          const { ctx } = T;
+          this.branches.forEach(b => {
+            Lyr.line(b.map(z => z[0]), b.map(z => z[1]), { color: col("chalk"), w: 2 })(T);
+            let len = 0; const segs = [];
+            for (let j = 1; j < b.length; j++) { const inv = [b[j], b[j - 1]].every(z => z[0] > T.x0 && z[0] < T.x1 && z[1] > T.y0 && z[1] < T.y1); const l = inv ? Math.hypot(T.X(b[j][0]) - T.X(b[j - 1][0]), T.Y(b[j][1]) - T.Y(b[j - 1][1])) : 0; segs.push(l); len += l; }
+            if (len < 30) return;
+            let acc = 0, target = len * .45;
+            for (let j = 1; j < b.length; j++) {
+              acc += segs[j - 1];
+              if (acc >= target && segs[j - 1] > 0) {
+                const x2 = T.X(b[j][0]), y2 = T.Y(b[j][1]); let k = j - 1; while (k > 0 && Math.hypot(T.X(b[k][0]) - x2, T.Y(b[k][1]) - y2) < 6) k--;
+                const ang = Math.atan2(y2 - T.Y(b[k][1]), x2 - T.X(b[k][0]));
+                ctx.save(); ctx.fillStyle = col("chalk"); ctx.translate(x2, y2); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-6, -5.5); ctx.lineTo(-6, 5.5); ctx.closePath(); ctx.fill(); ctx.restore();
+                break;
+              }
+            }
+          });
+        }),
+        L.ang && (T => {
+          const { ctx } = T, Lp = 44;
+          this.angles.forEach(a => {
+            const th = a.ang * Math.PI / 180, x = T.X(a.at[0]), y = T.Y(a.at[1]);
+            const dx = Math.cos(th), dy = -Math.sin(th);
+            const [sx, sy, ex, ey] = a.kind === "departure" ? [x + dx * 10, y + dy * 10, x + dx * Lp, y + dy * Lp] : [x + dx * Lp, y + dy * Lp, x + dx * 10, y + dy * 10];
+            ctx.save(); ctx.strokeStyle = col("sky"); ctx.fillStyle = col("sky"); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+            const an = Math.atan2(ey - sy, ex - sx); ctx.translate(ex, ey); ctx.rotate(an); ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-6, -4.5); ctx.lineTo(-6, 4.5); ctx.fill(); ctx.restore();
+            ctx.save(); ctx.font = FONT_UI; ctx.fillStyle = col("sky"); ctx.textAlign = "left"; ctx.fillText((a.kind === "departure" ? "θd = " : "θa = ") + fmt(a.ang, 1) + "°", x + 12, y + (a.at[1] >= 0 ? -12 : 16)); ctx.restore();
+            // mirror image for the conjugate
+            const y2 = T.Y(-a.at[1]), dy2 = -dy;
+            const [s2x, s2y, e2x, e2y] = a.kind === "departure" ? [x + dx * 10, y2 + dy2 * 10, x + dx * Lp, y2 + dy2 * Lp] : [x + dx * Lp, y2 + dy2 * Lp, x + dx * 10, y2 + dy2 * 10];
+            ctx.save(); ctx.strokeStyle = rgba(col("sky"), .6); ctx.fillStyle = rgba(col("sky"), .6); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s2x, s2y); ctx.lineTo(e2x, e2y); ctx.stroke();
+            const an2 = Math.atan2(e2y - s2y, e2x - s2x); ctx.translate(e2x, e2y); ctx.rotate(an2); ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-6, -4.5); ctx.lineTo(-6, 4.5); ctx.fill(); ctx.restore();
+          });
+        }),
+        L.brk && (T => {
+          const { ctx } = T;
+          this.brk.forEach(b => {
+            const x = T.X(b.s), y = T.Y(0);
+            ctx.save(); ctx.fillStyle = col("violet"); ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x + 7, y); ctx.lineTo(x, y + 7); ctx.lineTo(x - 7, y); ctx.closePath(); ctx.fill(); ctx.restore();
+            Lyr.text(b.s, 0, b.type, { color: col("violet"), align: "left", dx: 7, dy: 19 })(T); Lyr.text(b.s, 0, fmt(b.s, 3), { color: col("violet"), align: "left", dx: 7, dy: 32 })(T);
+          });
+        }),
+        L.cross && (T => {
+          this.cross.forEach(c => {
+            [c.w, -c.w].forEach((w, i) => { if (i && c.w < 1e-4) return; const { ctx } = T; ctx.save(); ctx.strokeStyle = col("mint"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(T.X(0), T.Y(w), 9, 0, 7); ctx.stroke(); ctx.restore(); });
+            Lyr.text(0, c.w, c.w < 1e-4 ? `K = ${fmt(c.K, 3)}` : `±j${fmt(c.w, 3)}, K = ${fmt(c.K, 3)}`, { color: col("mint"), dx: c.w < 1e-4 ? -10 : 13, dy: c.w < 1e-4 ? -14 : -10, align: c.w < 1e-4 ? "right" : "left" })(T);
+          });
+        }),
+        T => { this.pr.forEach(p => Lyr.pole(p[0], p[1])(T)); this.zr.forEach(z => Lyr.zero(z[0], z[1])(T)); },
+        L.dots && (T => { if (this.K > 0) this.cl.forEach(z => Lyr.dot(z[0], z[1], { r: 5.5 })(T)); }),
+        T => { if (this.hover) { const { ctx } = T; ctx.save(); ctx.strokeStyle = "rgba(231,234,240,.35)"; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(T.X(this.hover[0]), T.Y(this.hover[1]), 6, 0, 7); ctx.stroke(); ctx.restore(); } },
+      ],
+    });
+  }
+  drawStep() {
+    if (!this.cvs || !this.N) return;
+    const K = this.K, stat = $(".stat", this.host);
+    if (K === 0) { drawPlot(this.cvs, { xlim: [0, 1], ylim: [-1, 1], xlabel: "t (s)", ylabel: "c(t)" }); stat.textContent = "K = 0: no feedback, output stays at 0"; return; }
+    const num = Poly.scale(this.N, K), den = this.charPoly(K);
+    const Tend = autoHorizon(den), r = stepResponse(num, den, Tend, 800);
+    const st = this.status(), yss = Poly.evalR(num, 0) / Poly.evalR(den, 0);
+    let lo = Math.min(0, ...r.y), hi = Math.max(1, ...r.y);
+    if (st.c === "bad") { lo = Math.max(lo, -4); hi = Math.min(hi, 4); }
+    const pad = (hi - lo) * .08;
+    drawPlot(this.cvs, { xlim: [0, Tend], ylim: [lo - pad, hi + pad], xlabel: "t (s)", ylabel: "c(t)", layers: [
+      st.c === "ok" && Lyr.hline(yss, { color: col("graphite"), label: "c(∞) = " + fmt(yss, 3) }),
+      Lyr.line(r.t, r.y, { color: st.c === "bad" ? col("coral") : col("amber"), w: 2 }) ] });
+    stat.textContent = st.c === "ok" ? `final value ${fmt(yss, 3)}` : st.c === "bad" ? "diverges" : "does not settle";
+  }
+  sweep() {
+    if (this._anim) { cancelAnimationFrame(this._anim); this._anim = null; return; }
+    let v = +this.sl.value >= 995 ? 0 : +this.sl.value; const t0 = performance.now(), v0 = v;
+    const tick = now => { v = v0 + (now - t0) / 6000 * 1000; if (v >= 1000) { v = 1000; this._anim = null; } this.sl.value = v; this.setK(this.v2K(v), "slider"); if (this._anim !== null && v < 1000) this._anim = requestAnimationFrame(tick); };
+    this._anim = requestAnimationFrame(tick);
+  }
+  enableDrag() {
+    const cv = this.cv; let item = null, raf = 0;
+    const pick = (px, py) => {
+      const T = cv._T; if (!T) return null; let best = null, bd = 15;
+      [...this.P.map(x => ["p", x]), ...this.Z.map(x => ["z", x])].forEach(([k, it]) => {
+        [it.im, -it.im].forEach(im => { const d = Math.hypot(T.X(it.re) - px, T.Y(im) - py); if (d < bd) { bd = d; best = it; } });
+      });
+      return best;
+    };
+    cv.addEventListener("pointerdown", e => {
+      const r = cv.getBoundingClientRect(); item = pick(e.clientX - r.left, e.clientY - r.top);
+      if (item) { cv.setPointerCapture(e.pointerId); this._dragging = true; if (!this.fixedView) this.fixedView = this.view; e.preventDefault(); }
+    });
+    cv.addEventListener("pointermove", e => {
+      const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+      if (!item) { cv.style.cursor = pick(px, py) ? "grab" : "crosshair"; return; }
+      cv.style.cursor = "grabbing";
+      const [x, y] = cv._T.inv(px, py), snap = v => Math.round(v * 20) / 20;
+      item.re = snap(x); if (item.im > 0) item.im = Math.max(.05, snap(Math.abs(y)));
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; this.recalc(); this.setK(this.K, "drag"); if (this.onChange) this.onChange(); });
+    });
+    const up = () => { if (item) { item = null; this._dragging = false; cv.style.cursor = "crosshair"; } };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  }
+}
+/* tiny pole-zero thumbnail for buttons */
+function pzThumb(poles, zeros, w = 74, h = 40) {
+  const pts = [...poles, ...zeros]; const xm = Math.max(1, ...pts.map(p => Math.abs(p[0]))), ym = Math.max(1, ...pts.map(p => Math.abs(p[1] || 0)));
+  const sx = (w / 2 - 8) / xm, sy = (h / 2 - 6) / ym, s = Math.min(sx, sy * 1.6);
+  const X = x => w / 2 + x * s, Y = y => h / 2 - y * Math.min(sy, s);
+  let g = `<line x1="2" y1="${h / 2}" x2="${w - 2}" y2="${h / 2}" stroke="${col("faint")}"/><line x1="${w / 2}" y1="2" x2="${w / 2}" y2="${h - 2}" stroke="${col("faint")}"/>`;
+  const all = (arr) => arr.flatMap(p => (p[1] ? [[p[0], p[1]], [p[0], -p[1]]] : [[p[0], 0]]));
+  all(poles).forEach(([x, y]) => { g += `<path d="M${X(x) - 3.5} ${Y(y) - 3.5}L${X(x) + 3.5} ${Y(y) + 3.5}M${X(x) - 3.5} ${Y(y) + 3.5}L${X(x) + 3.5} ${Y(y) - 3.5}" stroke="${col("coral")}" stroke-width="1.8"/>`; });
+  all(zeros).forEach(([x, y]) => { g += `<circle cx="${X(x)}" cy="${Y(y)}" r="3.3" fill="none" stroke="${col("sky")}" stroke-width="1.6"/>`; });
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${g}</svg>`;
+}
+
+"use strict";
+/* ================= Tutorial 6 — frequency response and Bode plots ================= */
+const MODE = {};
+
+/* ---------- complex polynomial evaluation on the jω axis ---------- */
+function pjw(p, w) {  /* p descending, returns [re, im] of p(jw) */
+  const n = p.length - 1; let re = 0, im = 0;
+  for (let i = 0; i <= n; i++) {
+    const c = p[i], m = n - i, pw = Math.pow(w, m);
+    switch (((m % 4) + 4) % 4) {
+      case 0: re += c * pw; break;
+      case 1: im += c * pw; break;
+      case 2: re -= c * pw; break;
+      default: im -= c * pw;
+    }
+  }
+  return [re, im];
+}
+function cdiv(a, b) { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; }
+function cmulc(a, b) { return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]]; }
+function Gjw(num, den, w) { return cdiv(pjw(num, w), pjw(den, w)); }
+const mag = z => Math.hypot(z[0], z[1]);
+const dB = v => 20 * Math.log10(v);
+
+/* evaluate a polynomial at a complex s */
+function pC(p, s) { let r = [0, 0]; for (const c of p) { r = cmulc(r, s); r = [r[0] + c, r[1]]; } return r; }
+
+function bodeData(num, den, x0, x1, n = 700) {
+  const x = [], m = [], ph = []; let prev = null, off = 0;
+  for (let i = 0; i <= n; i++) {
+    const xi = x0 + (x1 - x0) * i / n, w = Math.pow(10, xi), G = Gjw(num, den, w);
+    let a = Math.atan2(G[1], G[0]) * 180 / Math.PI;
+    if (prev !== null) { while (a + off - prev > 180) off -= 360; while (a + off - prev < -180) off += 360; }
+    prev = a + off; x.push(xi); m.push(dB(mag(G))); ph.push(a + off);
+  }
+  return { x, m, ph };
+}
+
+/* ---------- the two systems ---------- */
+const SYS = {
+  a: {
+    tag: "G₁", num: [1], den: [1, 6, 8, 0], tex: "\\frac{1}{s(s+2)(s+4)}",
+    zeros: [], poles: [[0, 0], [-2, 0], [-4, 0]],
+    terms: [
+      { t: "k", lab: "constant 1/8 → −18.06 dB", val: 1 / 8, color: "graphite" },
+      { t: "p0", lab: "pole at the origin", w: 1, color: "sky" },
+      { t: "p", lab: "pole at −2", w: 2, color: "mint" },
+      { t: "p", lab: "pole at −4", w: 4, color: "violet" },
+    ],
+    M: w => 1 / (w * Math.sqrt(4 + w * w) * Math.sqrt(16 + w * w)),
+    P: w => -90 - Math.atan(w / 2) * 180 / Math.PI - Math.atan(w / 4) * 180 / Math.PI,
+  },
+  b: {
+    tag: "G₂", num: [1, 5], den: [1, 6, 8], tex: "\\frac{s+5}{(s+2)(s+4)}",
+    zeros: [[-5, 0]], poles: [[-2, 0], [-4, 0]],
+    terms: [
+      { t: "k", lab: "constant 5/8 → −4.08 dB", val: 5 / 8, color: "graphite" },
+      { t: "z", lab: "zero at −5", w: 5, color: "amber" },
+      { t: "p", lab: "pole at −2", w: 2, color: "mint" },
+      { t: "p", lab: "pole at −4", w: 4, color: "violet" },
+    ],
+    M: w => Math.sqrt(25 + w * w) / (Math.sqrt(4 + w * w) * Math.sqrt(16 + w * w)),
+    P: w => (Math.atan(w / 5) - Math.atan(w / 2) - Math.atan(w / 4)) * 180 / Math.PI,
+  },
+};
+const tMag = (t, x) => t.t === "k" ? dB(t.val) : t.t === "p0" ? -20 * x : t.t === "p" ? (x < Math.log10(t.w) ? 0 : -20 * (x - Math.log10(t.w))) : (x < Math.log10(t.w) ? 0 : 20 * (x - Math.log10(t.w)));
+const tPh = (t, x) => {
+  if (t.t === "k") return 0;
+  if (t.t === "p0") return -90;
+  const lo = Math.log10(t.w) - 1, hi = Math.log10(t.w) + 1, s = t.t === "p" ? -45 : 45;
+  return x <= lo ? 0 : x >= hi ? 2 * s : s * (x - lo);
+};
+
+/* ---------- Bode drawing ---------- */
+const XF = v => { const p = Math.round(v); return p === 0 ? "1" : p === 1 ? "10" : p === 2 ? "100" : p === -1 ? "0.1" : p === -2 ? "0.01" : p === 3 ? "1000" : "1e" + p; };
+const minorGrid = T => {
+  const { ctx } = T; ctx.save(); ctx.strokeStyle = "rgba(108,150,214,.055)";
+  for (let d = Math.floor(T.x0) - 1; d <= T.x1 + 1; d++) for (let k = 2; k < 10; k++) {
+    const x = d + Math.log10(k); if (x < T.x0 || x > T.x1) continue;
+    ctx.beginPath(); ctx.moveTo(T.X(x), T.pad.t); ctx.lineTo(T.X(x), T.pad.t + T.ph); ctx.stroke();
+  }
+  ctx.restore();
+};
+function drawBode(cvM, cvP, cfg) {
+  const S = cfg.sys, x0 = cfg.x0 ?? -1, x1 = cfg.x1 ?? 2, d = bodeData(S.num, S.den, x0, x1);
+  const on = cfg.terms || S.terms.map(() => true);
+  const asyM = x => S.terms.reduce((a, t, i) => a + (on[i] ? tMag(t, x) : 0), 0);
+  const asyP = x => S.terms.reduce((a, t, i) => a + (on[i] ? tPh(t, x) : 0), 0);
+  const parts = cfg.parts ? S.terms.map((t, i) => on[i] && Lyr.fn(x => tMag(t, x), { color: col(t.color), w: 1.2, dash: [4, 3] })) : [];
+  const partsP = cfg.parts ? S.terms.map((t, i) => on[i] && Lyr.fn(x => tPh(t, x), { color: col(t.color), w: 1.2, dash: [4, 3] })) : [];
+  const mk = cfg.wmark != null ? Math.log10(cfg.wmark) : null;
+  const mlo = cfg.mlim ? cfg.mlim[0] : Math.min(-60, Math.floor(Math.min(...d.m) / 20) * 20);
+  const mhi = cfg.mlim ? cfg.mlim[1] : Math.max(20, Math.ceil(Math.max(...d.m) / 20) * 20);
+  drawPlot(cvM, { xlim: [x0, x1], ylim: [mlo, mhi], xstep: 1, ystep: 20, xfmt: XF, xlabel: "ω (rad/s)", ylabel: "|G| (dB)", layers: [
+    minorGrid, ...parts,
+    cfg.asym !== false && Lyr.fn(asyM, { color: col("amber"), w: 2.2, n: 900 }),
+    cfg.exact !== false && Lyr.line(d.x, d.m, { color: col("chalk"), w: 1.8, alpha: .85 }),
+    mk != null && Lyr.vline(mk, { color: col("coral"), dash: [3, 3] }),
+    mk != null && Lyr.dot(mk, dB(mag(Gjw(S.num, S.den, cfg.wmark))), { color: col("coral") }),
+  ] });
+  const plo = cfg.plim ? cfg.plim[0] : Math.min(-280, Math.floor(Math.min(...d.ph) / 45) * 45);
+  const phi = cfg.plim ? cfg.plim[1] : Math.max(45, Math.ceil(Math.max(...d.ph) / 45) * 45);
+  drawPlot(cvP, { xlim: [x0, x1], ylim: [plo, phi], xstep: 1, ystep: 45, xfmt: XF, xlabel: "ω (rad/s)", ylabel: "phase (°)", layers: [
+    minorGrid, ...partsP,
+    cfg.asym !== false && Lyr.fn(asyP, { color: col("amber"), w: 2.2, n: 900 }),
+    cfg.exact !== false && Lyr.line(d.x, d.ph, { color: col("chalk"), w: 1.8, alpha: .85 }),
+    mk != null && Lyr.vline(mk, { color: col("coral"), dash: [3, 3] }),
+    mk != null && Lyr.dot(mk, d.ph[Math.max(0, Math.min(700, Math.round((mk - x0) / (x1 - x0) * 700)))], { color: col("coral") }),
+  ] });
+}
+function bodeVis(key, cfg) {
+  VIS[key] = host => {
+    const w = document.createElement("div"); w.className = "plots two"; w.style.maxWidth = "960px"; w.style.margin = "0 auto";
+    w.innerHTML = `<div class="plotbox"><div class="pt"><span>Magnitude</span><span>white: exact, amber: asymptotes</span></div><canvas style="height:280px"></canvas></div><div class="plotbox"><div class="pt"><span>Phase</span></div><canvas style="height:280px"></canvas></div>`;
+    host.appendChild(w);
+    const [c1, c2] = w.querySelectorAll("canvas");
+    const d = () => drawBode(c1, c2, cfg);
+    livePlot(c1, d); livePlot(c2, d);
+  };
+}
+bodeVis("t6e1_a", { sys: SYS.a, asym: false, mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e1_b", { sys: SYS.b, asym: false, mlim: [-60, 10], plim: [-140, 20] });
+bodeVis("t6e2_a0", { sys: SYS.a, exact: false, parts: true, terms: [1, 0, 0, 0], mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e2_a1", { sys: SYS.a, exact: false, parts: true, terms: [1, 1, 0, 0], mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e2_a2", { sys: SYS.a, exact: false, parts: true, terms: [1, 1, 1, 0], mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e2_a3", { sys: SYS.a, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e2_a4", { sys: SYS.a, parts: false, mlim: [-100, 20], plim: [-280, 0] });
+bodeVis("t6e2_b0", { sys: SYS.b, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: [-60, 10], plim: [-140, 20] });
+bodeVis("t6e2_b1", { sys: SYS.b, parts: false, mlim: [-60, 10], plim: [-140, 20] });
+
+/* ---------- Nyquist ---------- */
+const NSYS = {
+  a: { lab: "G(s) = 1/[s(s+2)(s+4)] — the system of exercise 1", num: [1], den: [1, 6, 8, 0], P: 0, Klim: [1, 200], step: 1, K0: 20, view: 1.8, note: "crosses the negative real axis at −K/48" },
+  b: { lab: "G(s) = 1/[(s−1)(s+2)] — one open-loop pole in the right half-plane", num: [1], den: [1, 1, -2], P: 1, Klim: [0.2, 8], step: 0.05, K0: 1.2, view: 2.2, note: "needs one counter-clockwise encirclement to be stable" },
+};
+function nyqCurve(num, den, K, wmax = 400, n = 1400) {
+  const pos = [], neg = [];
+  for (let i = 0; i <= n; i++) {
+    const w = Math.pow(10, -3 + Math.log10(wmax / 1e-3) * i / n), G = Gjw(num, den, w);
+    pos.push([K * G[0], K * G[1]]); neg.push([K * G[0], -K * G[1]]);
+  }
+  return { pos, neg };
+}
+function winding(num, den, K) {
+  const axis = Poly.roots(den).filter(z => Math.abs(z[0]) < 1e-7).map(z => z[1]).sort((a, b) => a - b);
+  const eps = 1e-3, R = 1e5, mags = [];
+  for (let i = 0; i <= 900; i++) mags.push(Math.pow(10, -5 + 10 * i / 900));
+  const ws = [...mags.map(m => -m).reverse(), ...mags];
+  const pts = []; let prev = -Infinity;
+  ws.forEach(w => {
+    if (axis.some(p => Math.abs(w - p) < eps * 1.2)) return;
+    axis.forEach(p => { if (prev < p - eps && w > p + eps) { for (let k = 0; k <= 60; k++) { const th = -Math.PI / 2 + Math.PI * k / 60; pts.push([eps * Math.cos(th), p + eps * Math.sin(th)]); } } });
+    pts.push([0, w]); prev = w;
+  });
+  for (let k = 0; k <= 80; k++) { const th = Math.PI / 2 - Math.PI * k / 80; pts.push([R * Math.cos(th), R * Math.sin(th)]); }
+  let tot = 0, last = null;
+  for (const s of pts) {
+    const G = cdiv(pC(num, s), pC(den, s)), F = [1 + K * G[0], K * G[1]];
+    const a = Math.atan2(F[1], F[0]);
+    if (last !== null) { let d = a - last; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; tot += d; }
+    last = a;
+  }
+  return Math.round(-tot / (2 * Math.PI));   /* clockwise encirclements of the origin by 1+KG */
+}
+function drawNyq(cv, S, K) {
+  const c = nyqCurve(S.num, S.den, K), V = S.view;
+  const pts = [...c.neg].reverse().concat(c.pos);
+  drawPlot(cv, { xlim: [-V, V * .6], ylim: [-V, V], equal: true, xlabel: "Re", ylabel: "Im", layers: [
+    Lyr.line(c.pos.map(p => p[0]), c.pos.map(p => p[1]), { color: col("amber"), w: 2.2 }),
+    Lyr.line(c.neg.map(p => p[0]), c.neg.map(p => p[1]), { color: col("amber"), w: 1.4, alpha: .55, dash: [5, 4] }),
+    Lyr.dot(-1, 0, { color: col("coral"), r: 6 }),
+    Lyr.text(-1, 0, "−1", { dx: 8, dy: -12, color: col("coral") }),
+    T => { const { ctx } = T; ctx.save(); ctx.strokeStyle = col("faint"); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.arc(T.X(0), T.Y(0), T.sx, 0, 7); ctx.stroke(); ctx.restore(); },
+    Lyr.text(0, 0, "unit circle", { dx: 6, dy: 14, color: col("faint") }),
+  ] });
+}
+VIS.t6e3_nyq = host => { const c = document.createElement("canvas"); c.style.cssText = "display:block;width:100%;max-width:560px;margin:0 auto;height:380px"; host.appendChild(c); livePlot(c, () => drawNyq(c, NSYS.a, 20)); };
+
+/* =================== labs =================== */
+function switcher(hostId, ids, onShow, labels) {
+  const host = $("#" + hostId);
+  host.innerHTML = ids.map(i => `<button class="btn ghost casebtn" type="button" data-id="${i}">${labels ? labels[i] : "(" + i + ")"}</button>`).join("");
+  const show = id => {
+    $$(".casebtn", host).forEach(b => { const on = b.dataset.id === id; b.setAttribute("aria-pressed", String(on)); b.style.borderColor = on ? "var(--amber)" : ""; b.style.color = on ? "var(--chalk)" : ""; });
+    $$(`[data-case^="${hostId}-"]`).forEach(el => { el.style.display = el.dataset.case === hostId + "-" + id ? "" : "none"; });
+    onShow && onShow(id);
+  };
+  $$(".casebtn", host).forEach(b => b.addEventListener("click", () => show(b.dataset.id)));
+  show(ids[0]);
+  return show;
+}
+
+/* Lab 1 — graphical evaluation of G(jω) */
+function lab1() {
+  let cur = "a";
+  const sl = $("#l1w"), cvs = $("#l1s"), cvm = $("#l1m");
+  const draw = () => {
+    const S = SYS[cur], w = Math.pow(10, +sl.value);
+    const pts = [...S.poles, ...S.zeros], R = 7;
+    drawPlot(cvs, { xlim: [-7, 3], ylim: [-1.5, Math.max(5, w * 1.15)], equal: true, xlabel: "σ", ylabel: "jω", layers: [
+      T => { const { ctx } = T; ctx.save(); ctx.lineWidth = 1.5;
+        S.poles.forEach(p => { ctx.strokeStyle = rgba(col("coral"), .8); ctx.beginPath(); ctx.moveTo(T.X(p[0]), T.Y(p[1])); ctx.lineTo(T.X(0), T.Y(w)); ctx.stroke(); });
+        S.zeros.forEach(z => { ctx.strokeStyle = rgba(col("sky"), .9); ctx.beginPath(); ctx.moveTo(T.X(z[0]), T.Y(z[1])); ctx.lineTo(T.X(0), T.Y(w)); ctx.stroke(); });
+        ctx.restore(); },
+      ...S.poles.map(p => Lyr.pole(p[0], p[1])), ...S.zeros.map(z => Lyr.zero(z[0], z[1])),
+      Lyr.dot(0, w, { color: col("amber") }), Lyr.text(0, w, `s = jω = j${fmt(w, 3)}`, { dx: 10, color: col("amber") }),
+    ] });
+    const S2 = SYS[cur], d = bodeData(S2.num, S2.den, -1, 2);
+    drawPlot(cvm, { xlim: [-1, 2], ylim: [-100, 20], xstep: 1, ystep: 20, xfmt: XF, xlabel: "ω (rad/s)", ylabel: "|G| (dB)", layers: [
+      minorGrid, Lyr.line(d.x, d.m, { color: col("chalk"), w: 1.8 }),
+      Lyr.vline(Math.log10(w), { color: col("coral"), dash: [3, 3] }),
+      Lyr.dot(Math.log10(w), dB(S2.M(w)), { color: col("coral") }) ] });
+  };
+  const upd = () => {
+    const S = SYS[cur], w = Math.pow(10, +sl.value);
+    $("#l1wv").textContent = fmt(w, 3);
+    const rows = [];
+    S.zeros.forEach(z => { const dx = 0 - z[0], dy = w - z[1]; rows.push([`vector from zero ${fmt(z[0], 2)}`, `length ${fmt(Math.hypot(dx, dy), 3)}, angle +${fmt(Math.atan2(dy, dx) * 180 / Math.PI, 2)}°`]); });
+    S.poles.forEach(p => { const dx = 0 - p[0], dy = w - p[1]; rows.push([`vector from pole ${fmt(p[0], 2)}`, `length ${fmt(Math.hypot(dx, dy), 3)}, angle −${fmt(Math.atan2(dy, dx) * 180 / Math.PI, 2)}°`]); });
+    const G = Gjw(S.num, S.den, w), Mx = mag(G), Px = Math.atan2(G[1], G[0]) * 180 / Math.PI;
+    $("#l1out").innerHTML = `<table>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}
+      <tr><td><b>|G(jω)|</b></td><td><b>${fmt(Mx, 5)} = ${fmt(dB(Mx), 2)} dB</b></td></tr>
+      <tr><td><b>∠G(jω)</b></td><td><b>${fmt(Px, 2)}°</b></td></tr>
+      <tr><td>from the closed form</td><td>${fmt(S.M(w), 5)}, ${fmt(S.P(w), 2)}°</td></tr></table>
+      <p class="small muted" style="margin:8px 0 0">Magnitude = product of the zero lengths divided by the product of the pole lengths; phase = sum of the zero angles minus the sum of the pole angles.</p>`;
+    draw();
+  };
+  livePlot(cvs, draw); livePlot(cvm, draw);
+  sl.addEventListener("input", upd);
+  switcher("cases-l1", ["a", "b"], id => { cur = id; upd(); }, { a: "G₁ = 1/[s(s+2)(s+4)]", b: "G₂ = (s+5)/[(s+2)(s+4)]" });
+  upd();
+}
+
+/* Lab 2 — build the asymptotic Bode plot */
+function lab2() {
+  let cur = "a";
+  const cvm = $("#l2m"), cvp = $("#l2p"), boxes = () => $$("#l2terms input").map(b => b.checked ? 1 : 0);
+  const cfg = () => ({ sys: SYS[cur], terms: boxes(), parts: $("#l2parts").checked, exact: $("#l2exact").checked, asym: $("#l2asym").checked,
+    wmark: Math.pow(10, +$("#l2w").value), mlim: cur === "a" ? [-100, 20] : [-60, 10], plim: cur === "a" ? [-280, 0] : [-140, 20] });
+  const draw = () => drawBode(cvm, cvp, cfg());
+  const build = () => {
+    $("#l2terms").innerHTML = SYS[cur].terms.map((t, i) => `<label class="chk"><input type="checkbox" checked><span class="sw" style="background:var(--${t.color})"></span>${t.lab}</label>`).join("<br>");
+    $$("#l2terms input").forEach(b => b.addEventListener("change", upd));
+  };
+  const upd = () => {
+    const S = SYS[cur], w = Math.pow(10, +$("#l2w").value), G = Gjw(S.num, S.den, w);
+    $("#l2wv").textContent = fmt(w, 3);
+    const on = boxes(), asyM = S.terms.reduce((a, t, i) => a + (on[i] ? tMag(t, Math.log10(w)) : 0), 0);
+    const asyP = S.terms.reduce((a, t, i) => a + (on[i] ? tPh(t, Math.log10(w)) : 0), 0);
+    let ex = Math.atan2(G[1], G[0]) * 180 / Math.PI; if (cur === "a" && ex > 0) ex -= 360;
+    $("#l2out").innerHTML = `<table>
+      <tr><td></td><td style="text-align:right">asymptote</td><td style="text-align:right">exact</td></tr>
+      <tr><td>|G| at ω = ${fmt(w, 3)}</td><td style="text-align:right">${fmt(asyM, 2)} dB</td><td style="text-align:right">${fmt(dB(mag(G)), 2)} dB</td></tr>
+      <tr><td>phase</td><td style="text-align:right">${fmt(asyP, 1)}°</td><td style="text-align:right">${fmt(ex, 1)}°</td></tr></table>
+      <p class="small muted" style="margin:8px 0 0">The asymptotes are worst at the break frequencies: a single pole is 3 dB below its corner there, and each phase corner is off by about 5°.</p>`;
+    draw();
+  };
+  livePlot(cvm, draw); livePlot(cvp, draw);
+  ["l2parts", "l2exact", "l2asym"].forEach(i => $("#" + i).addEventListener("change", upd));
+  $("#l2w").addEventListener("input", upd);
+  switcher("cases-l2", ["a", "b"], id => { cur = id; build(); upd(); }, { a: "G₁ = 1/[s(s+2)(s+4)]", b: "G₂ = (s+5)/[(s+2)(s+4)]" });
+}
+
+/* Lab 3 — Nyquist */
+function lab3() {
+  let cur = "a";
+  const cv = $("#l3n"), sl = $("#l3K");
+  const draw = () => drawNyq(cv, NSYS[cur], +sl.value);
+  const upd = () => {
+    const S = NSYS[cur], K = +sl.value;
+    $("#l3Kv").textContent = fmt(K, 2);
+    const N = winding(S.num, S.den, K), Z = N + S.P;
+    const cl = S.den.map((v, i) => v + (S.num[S.num.length - S.den.length + i] || 0) * K);
+    const roots = Poly.roots(cl), rhp = roots.filter(z => z[0] > 1e-7).length;
+    $("#l3out").innerHTML = `<table>
+      <tr><td>P (open-loop poles in the RHP)</td><td>${S.P}</td></tr>
+      <tr><td>N (clockwise encirclements of −1)</td><td>${N}</td></tr>
+      <tr><td>Z = N + P</td><td>${Z}</td></tr>
+      <tr><td>closed-loop poles</td><td>${roots.map(z => fmtC(z, 3)).join(", ")}</td></tr>
+      <tr><td>actually in the RHP</td><td>${rhp}</td></tr></table>
+      <p style="margin:8px 0 0">${roots.some(z => Math.abs(z[0]) < 1e-6) ? '<span class="badge mid">marginal: a closed-loop pole sits on the axis</span>' : Z === 0 ? '<span class="badge ok">stable closed loop</span>' : `<span class="badge bad">unstable: ${Z} closed-loop pole(s) in the RHP</span>`}</p>
+      <p class="small muted" style="margin:6px 0 0">${S.note}</p>`;
+    draw();
+  };
+  livePlot(cv, draw);
+  sl.addEventListener("input", upd);
+  switcher("cases-l3", ["a", "b"], id => {
+    cur = id; const S = NSYS[id];
+    sl.min = S.Klim[0]; sl.max = S.Klim[1]; sl.step = S.step; sl.value = S.K0;
+    $("#l3gm").style.display = id === "a" ? "" : "none";
+    upd();
+  }, { a: "no RHP open-loop poles (P = 0)", b: "one RHP open-loop pole (P = 1)" });
+  $("#l3gm").addEventListener("click", () => { if (cur === "a") { sl.value = 48; upd(); } });
+}
+
+function initT6() {
+  initTabs();
+  $$(".form-vis").forEach(el => { const r = VIS[el.dataset.vis](el); if (typeof r === "string") el.innerHTML = r; });
+  const stp = {};
+  $$(".stepper").forEach(st => {
+    const api = initStepper(st, { onStep: sEl => { if (sEl.dataset.show != null && st.dataset.key) MODE[st.dataset.key] = sEl.dataset.show; } });
+    if (st.dataset.case) stp[st.dataset.case] = api;
+  });
+  const LB = { a: "(a) 1/[s(s+2)(s+4)]", b: "(b) (s+5)/[(s+2)(s+4)]" };
+  switcher("cases-e1", ["a", "b"], id => { const a = stp["cases-e1-" + id]; if (a) a.go(a.cur); }, LB);
+  switcher("cases-e2", ["a", "b"], id => { const a = stp["cases-e2-" + id]; if (a) a.go(a.cur); }, LB);
+  lab1(); lab2(); lab3();
+}
+document.addEventListener("DOMContentLoaded", initT6);
+
+</script>
+</body>
+</html>
