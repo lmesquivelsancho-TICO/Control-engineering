@@ -2,7 +2,7 @@
 
 Interactive HTML tutorials for the Control Engineering course (ENTEG, University of Groningen).
 
-**Live site:** https://lmesquivelsancho-tico.github.io/control-engineering-tutorials/
+**Live site:** https://lmesquivelsancho-tico.github.io/Control-engineering/
 
 | # | Tutorial |
 |---|----------|
