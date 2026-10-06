@@ -297,8 +297,9 @@ table.tbl tr.sel td { background: rgba(243,179,61,.1); }
 <body>
 <script>
 (function(){
-  var unlockDate = new Date("2026-10-06T00:00:00+02:00");
-  if (new Date() < unlockDate) {
+  var unlockDate = new Date("2026-10-09T00:00:00+02:00");
+  var preview = new URLSearchParams(location.search).get("preview") === "luis-ce";
+  if (!preview && new Date() < unlockDate) {
     document.documentElement.innerHTML =
       '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
       '<title>Coming Soon | Control Engineering for BME</title>' +
