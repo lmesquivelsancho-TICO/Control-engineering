@@ -545,6 +545,153 @@ table.tbl tr.sel td { background: rgba(243,179,61,.1); }
   </div>
 
   <div class="sec">
+    <h2>More worked examples</h2>
+    <p class="prose">Four more sketches with features the two textbook functions do not have: a zero at the origin, a repeated pole, a lightly damped complex pair and a double integrator. The method never changes — normalise, list the break frequencies, add the slopes, add the phases — only the building blocks do.</p>
+    <div class="tblwrap"><table class="tbl" style="max-width:980px">
+      <tr><th>New term</th><th>Magnitude</th><th>Phase</th></tr>
+      <tr><td>zero at the origin \(j\omega\)</td><td>straight +20 dB/decade through 0 dB at \(\omega=1\)</td><td>constant +90°</td></tr>
+      <tr><td>repeated pole \(\left(\frac{j\omega}{a}+1\right)^{-n}\)</td><td>0 dB, then \(-20n\) dB/decade above \(a\); exact curve \(3n\) dB below the corner</td><td>\(-45n\)°/decade from \(a/10\) to \(10a\), ending at \(-90n\)°</td></tr>
+      <tr><td>\(n\) poles at the origin \(1/(j\omega)^n\)</td><td>\(-20n\) dB/decade through 0 dB at \(\omega=1\)</td><td>constant \(-90n\)°</td></tr>
+      <tr><td>complex pair \(\dfrac{\omega_n^2}{s^2+2\zeta\omega_n s+\omega_n^2}\)</td><td>0 dB, then −40 dB/decade above \(\omega_n\); exact value at \(\omega_n\) is \(-20\log_{10}(2\zeta)\) dB</td><td>−90°/decade from \(\omega_n/10\) to \(10\omega_n\), ending at −180°</td></tr>
+    </table></div>
+    <div class="cases" id="cases-e2x"></div>
+
+    <div data-case="cases-e2x-c">
+      <div class="stepper" data-case="cases-e2x-c" data-key="e2c">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Normalise the factors" data-vis="t6e2_c0">
+            <div class="eq">\[G(s)=\frac{10s}{(s+1)(s+10)}\quad\Rightarrow\quad G(j\omega)=\frac{10\,j\omega}{1\cdot10\left(j\omega+1\right)\left(\frac{j\omega}{10}+1\right)}=\frac{j\omega}{\left(j\omega+1\right)\left(\frac{j\omega}{10}+1\right)}\]</div>
+            <p>The constant is exactly 1, so it contributes <b>0 dB</b> and 0°. Break frequencies: 1 and 10. The new ingredient is the \(s\) in the numerator — a zero at the origin.</p>
+          </div>
+          <div class="step" data-title="The zero at the origin" data-vis="t6e2_c1">
+            <p>\(j\omega\) has magnitude \(\omega\): a straight line of slope <b>+20 dB/decade</b> through 0 dB at \(\omega=1\). Its phase is a constant <b>+90°</b>.</p>
+            <p>So the plot <i>starts rising</i> at low frequency instead of starting flat or falling — at \(\omega=0.01\) the magnitude is −40 dB. This is the signature of a system that blocks DC.</p>
+          </div>
+          <div class="step" data-title="The pole at −1" data-vis="t6e2_c2">
+            <p>Above \(\omega=1\) this pole adds −20 dB/decade, which exactly cancels the zero's +20: the asymptote goes <b>flat at 0 dB</b>.</p>
+            <p>Phase: −45°/decade from 0.1 to 10, ending at −90°.</p>
+          </div>
+          <div class="step" data-title="The pole at −10" data-vis="t6e2_c3">
+            <p>Above \(\omega=10\) the second pole takes over and the asymptote falls at −20 dB/decade. Phase: another −45°/decade between 1 and 100.</p>
+          </div>
+          <div class="step" data-title="Add everything up" data-vis="t6e2_c4">
+            <div class="tblwrap"><table class="tbl" style="max-width:640px">
+              <tr><th></th><th>ω &lt; 1</th><th>1 &lt; ω &lt; 10</th><th>ω &gt; 10</th></tr>
+              <tr><td>zero at 0</td><td>+20</td><td>+20</td><td>+20</td></tr>
+              <tr><td>pole at −1</td><td>0</td><td>−20</td><td>−20</td></tr>
+              <tr><td>pole at −10</td><td>0</td><td>0</td><td>−20</td></tr>
+              <tr><td><b>total (dB/dec)</b></td><td><b>+20</b></td><td><b>0</b></td><td><b>−20</b></td></tr>
+            </table></div>
+            <p>Phase corners: \(+90^\circ\) up to 0.1; \(-45^\circ\)/dec from 0.1 to 1 (reaches \(+45^\circ\)); \(-90^\circ\)/dec from 1 to 10 (reaches \(-45^\circ\)); \(-45^\circ\)/dec from 10 to 100; flat at \(-90^\circ\).</p>
+            <p>The result is a <b>band-pass</b> shape. The exact curve is −3 dB at both corners, peaks at −0.83 dB at \(\omega=\sqrt{1\cdot10}=3.16\), and its phase crosses 0° at that same frequency — the plot is symmetric about the geometric mean of the two corners.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-case="cases-e2x-d">
+      <div class="stepper" data-case="cases-e2x-d" data-key="e2d">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Normalise the factors" data-vis="t6e2_d0">
+            <div class="eq">\[G(s)=\frac{100(s+1)}{s(s+10)^2}\quad\Rightarrow\quad G(j\omega)=\frac{100\left(j\omega+1\right)}{10^2\,j\omega\left(\frac{j\omega}{10}+1\right)^2}=\frac{j\omega+1}{j\omega\left(\frac{j\omega}{10}+1\right)^2}\]</div>
+            <p>Again the constant comes out as 1 (0 dB). Terms: a pole at the origin, a zero at 1, and a <b>double pole</b> at 10. A squared factor is just the same term added twice.</p>
+          </div>
+          <div class="step" data-title="Pole at the origin" data-vis="t6e2_d1">
+            <p>−20 dB/decade through 0 dB at \(\omega=1\) and a constant −90°. This sets the low-frequency asymptote: +40 dB at \(\omega=0.01\), +20 dB at 0.1.</p>
+          </div>
+          <div class="step" data-title="Zero at −1" data-vis="t6e2_d2">
+            <p>Above \(\omega=1\) the zero adds +20 dB/decade, cancelling the integrator: the asymptote goes <b>flat at 0 dB</b> between 1 and 10.</p>
+            <p>Phase: +45°/decade from 0.1 to 10, ending at +90°.</p>
+          </div>
+          <div class="step" data-title="Double pole at −10" data-vis="t6e2_d3">
+            <p>Two identical poles break at the same frequency, so everything doubles: <b>−40 dB/decade</b> above \(\omega=10\), and <b>−90°/decade</b> in phase from 1 to 100, ending at −180°.</p>
+            <p>The error doubles too: at the corner the exact curve is about <b>6 dB</b> below the asymptote, not 3.</p>
+          </div>
+          <div class="step" data-title="Add everything up" data-vis="t6e2_d4">
+            <div class="tblwrap"><table class="tbl" style="max-width:640px">
+              <tr><th></th><th>ω &lt; 1</th><th>1 &lt; ω &lt; 10</th><th>ω &gt; 10</th></tr>
+              <tr><td>pole at 0</td><td>−20</td><td>−20</td><td>−20</td></tr>
+              <tr><td>zero at −1</td><td>0</td><td>+20</td><td>+20</td></tr>
+              <tr><td>double pole at −10</td><td>0</td><td>0</td><td>−40</td></tr>
+              <tr><td><b>total (dB/dec)</b></td><td><b>−20</b></td><td><b>0</b></td><td><b>−40</b></td></tr>
+            </table></div>
+            <p>Phase corners: \(-90^\circ\) up to 0.1; \(+45^\circ\)/dec from 0.1 to 1 (reaches \(-45^\circ\)); \(+45-90=-45^\circ\)/dec from 1 to 10 (back to \(-90^\circ\)); \(-90^\circ\)/dec from 10 to 100; flat at \(-180^\circ\).</p>
+            <p>Check the ends: one zero and three poles, so the final slope must be −40 dB/decade and the final phase −180°. Exact values: +2.9 dB at \(\omega=1\) (the zero's +3 dB), −6.0 dB at \(\omega=10\) (the double pole's −6 dB), and the phase bump peaks at about −49° near \(\omega=2\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-case="cases-e2x-e">
+      <div class="stepper" data-case="cases-e2x-e" data-key="e2e">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Identify the quadratic" data-vis="t6e2_e0">
+            <div class="eq">\[G(s)=\frac{100}{(s+1)(s^2+4s+100)}\]</div>
+            <p>The quadratic has complex roots, so it cannot be split into two real first-order terms. Match it to the standard form:</p>
+            <div class="eq">\[s^2+2\zeta\omega_n s+\omega_n^2:\qquad \omega_n^2=100\Rightarrow\omega_n=10,\qquad 2\zeta\omega_n=4\Rightarrow\zeta=0.2\]</div>
+            <p>Normalised: \(G(j\omega)=\dfrac{100}{1\cdot100}\cdot\dfrac{1}{(j\omega+1)}\cdot\dfrac{1}{\left(\frac{j\omega}{10}\right)^2+0.04\,j\omega+1}\). The constant is 1 → 0 dB, so the plot starts flat at 0 dB.</p>
+          </div>
+          <div class="step" data-title="The real pole at −1" data-vis="t6e2_e1">
+            <p>The familiar shape: 0 dB until \(\omega=1\), then −20 dB/decade; phase −45°/decade from 0.1 to 10.</p>
+          </div>
+          <div class="step" data-title="The complex pair" data-vis="t6e2_e2">
+            <p>A complex pair behaves like a double pole at \(\omega_n=10\) <i>in the asymptotes</i>: 0 dB below 10, <b>−40 dB/decade</b> above; phase <b>−90°/decade</b> from 1 to 100, ending at −180°.</p>
+            <p>What the asymptotes cannot show is the <b>resonance</b>. At \(\omega=\omega_n\) the exact magnitude of this term is</p>
+            <div class="eq">\[\left|\frac{1}{2j\zeta}\right|=\frac{1}{2\zeta}=2.5\;\Rightarrow\;+7.96\text{ dB}\]</div>
+            <p>above the asymptote — the opposite sign to the −6 dB of a real double pole. The smaller \(\zeta\), the taller the peak.</p>
+          </div>
+          <div class="step" data-title="Add everything up" data-vis="t6e2_e3">
+            <div class="tblwrap"><table class="tbl" style="max-width:640px">
+              <tr><th></th><th>ω &lt; 1</th><th>1 &lt; ω &lt; 10</th><th>ω &gt; 10</th></tr>
+              <tr><td>pole at −1</td><td>0</td><td>−20</td><td>−20</td></tr>
+              <tr><td>complex pair, \(\omega_n=10\)</td><td>0</td><td>0</td><td>−40</td></tr>
+              <tr><td><b>total (dB/dec)</b></td><td><b>0</b></td><td><b>−20</b></td><td><b>−60</b></td></tr>
+            </table></div>
+            <p>Phase corners: 0° up to 0.1; −45°/dec from 0.1 to 1; −135°/dec from 1 to 10 (both terms); −90°/dec from 10 to 100; flat at −270°.</p>
+            <p>The exact curve shows a hump of about 8 dB riding on the −20 dB/decade line just below \(\omega=10\) (max −11.3 dB at \(\omega\approx9.1\), where the asymptote says −19 dB). The exact phase also drops much faster than the asymptote near \(\omega_n\): for small \(\zeta\) almost all of the −180° happens within a narrow band around 10. <b>Always mark the resonant peak by hand when \(\zeta\lt 0.5\)</b>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-case="cases-e2x-f">
+      <div class="stepper" data-case="cases-e2x-f" data-key="e2f">
+        <div class="steps-nav"></div><div class="step-vis stage"></div>
+        <div class="step-body">
+          <div class="step" data-title="Normalise the factors" data-vis="t6e2_f0">
+            <div class="eq">\[G(s)=\frac{10(s+2)}{s^2(s+20)}\quad\Rightarrow\quad G(j\omega)=\frac{10\cdot2\left(\frac{j\omega}{2}+1\right)}{20\,(j\omega)^2\left(\frac{j\omega}{20}+1\right)}=\frac{\frac{j\omega}{2}+1}{(j\omega)^2\left(\frac{j\omega}{20}+1\right)}\]</div>
+            <p>Constant 1 → 0 dB. Terms: a <b>double pole at the origin</b> (a type-2 system), a zero at 2 and a pole at 20.</p>
+          </div>
+          <div class="step" data-title="Double pole at the origin" data-vis="t6e2_f1">
+            <p>\(1/(j\omega)^2=-1/\omega^2\): magnitude −40 dB/decade through 0 dB at \(\omega=1\), and a constant phase of <b>−180°</b>.</p>
+            <p>So the plot starts at +80 dB at \(\omega=0.01\) and the phase already sits on −180° — with nothing else, this system would have zero phase margin.</p>
+          </div>
+          <div class="step" data-title="Zero at −2" data-vis="t6e2_f2">
+            <p>+20 dB/decade above 2, so the slope eases to −20 dB/decade. Phase: +45°/decade from 0.2 to 20, lifting the curve <b>above</b> −180°.</p>
+          </div>
+          <div class="step" data-title="Pole at −20" data-vis="t6e2_f3">
+            <p>Above 20 the slope returns to −40 dB/decade. Phase: −45°/decade from 2 to 200, which pulls the curve back down to −180°.</p>
+          </div>
+          <div class="step" data-title="Add everything up" data-vis="t6e2_f4">
+            <div class="tblwrap"><table class="tbl" style="max-width:640px">
+              <tr><th></th><th>ω &lt; 2</th><th>2 &lt; ω &lt; 20</th><th>ω &gt; 20</th></tr>
+              <tr><td>double pole at 0</td><td>−40</td><td>−40</td><td>−40</td></tr>
+              <tr><td>zero at −2</td><td>0</td><td>+20</td><td>+20</td></tr>
+              <tr><td>pole at −20</td><td>0</td><td>0</td><td>−20</td></tr>
+              <tr><td><b>total (dB/dec)</b></td><td><b>−40</b></td><td><b>−20</b></td><td><b>−40</b></td></tr>
+            </table></div>
+            <p>Phase corners: −180° up to 0.2; +45°/dec from 0.2 to 2 (reaches −135°); flat at −135° from 2 to 20 (zero and pole cancel); −45°/dec from 20 to 200; flat at −180°.</p>
+            <p>The exact phase peaks at −125° at \(\omega=\sqrt{2\cdot20}=6.32\). This zero-below-pole pair is exactly a <b>lead compensator</b>: it borrows phase in the middle of the plot so that a type-2 loop can cross 0 dB with positive phase margin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
     <h2>Lab: build the sketch one term at a time</h2>
     <p class="prose">Untick a term to remove its contribution, or show the individual asymptotes as dashed lines. The readout compares the asymptotic value with the exact one at the marked frequency.</p>
     <div class="cases" id="cases-l2"></div>
@@ -1517,13 +1664,49 @@ const SYS = {
     P: w => (Math.atan(w / 5) - Math.atan(w / 2) - Math.atan(w / 4)) * 180 / Math.PI,
   },
 };
-const tMag = (t, x) => t.t === "k" ? dB(t.val) : t.t === "p0" ? -20 * x : t.t === "p" ? (x < Math.log10(t.w) ? 0 : -20 * (x - Math.log10(t.w))) : (x < Math.log10(t.w) ? 0 : 20 * (x - Math.log10(t.w)));
+/* term types: k constant, p0/z0 pole/zero at the origin, p/z real pole/zero, pc complex pole pair; n = multiplicity */
+const tMag = (t, x) => {
+  const n = t.n || 1;
+  if (t.t === "k") return dB(t.val);
+  if (t.t === "p0") return -20 * n * x;
+  if (t.t === "z0") return 20 * n * x;
+  const xb = Math.log10(t.w); if (x < xb) return 0;
+  return (t.t === "p" ? -20 * n : t.t === "z" ? 20 * n : -40) * (x - xb);
+};
 const tPh = (t, x) => {
-  if (t.t === "k") return 0;
-  if (t.t === "p0") return -90;
-  const lo = Math.log10(t.w) - 1, hi = Math.log10(t.w) + 1, s = t.t === "p" ? -45 : 45;
+  const n = t.n || 1;
+  if (t.t === "k") return t.val < 0 ? 180 : 0;
+  if (t.t === "p0") return -90 * n;
+  if (t.t === "z0") return 90 * n;
+  const lo = Math.log10(t.w) - 1, hi = Math.log10(t.w) + 1, s = t.t === "p" ? -45 * n : t.t === "z" ? 45 * n : -90;
   return x <= lo ? 0 : x >= hi ? 2 * s : s * (x - lo);
 };
+/* extra worked examples */
+Object.assign(SYS, {
+  c: { tag: "G₃", num: [10, 0], den: [1, 11, 10], x0: -2, x1: 3, mlim: [-60, 20], plim: [-135, 135],
+    terms: [
+      { t: "k", lab: "constant 1 → 0 dB", val: 1, color: "graphite" },
+      { t: "z0", lab: "zero at the origin", color: "amber" },
+      { t: "p", lab: "pole at −1", w: 1, color: "mint" },
+      { t: "p", lab: "pole at −10", w: 10, color: "violet" } ] },
+  d: { tag: "G₄", num: [100, 100], den: [1, 20, 100, 0], x0: -2, x1: 3, mlim: [-100, 60], plim: [-225, 90],
+    terms: [
+      { t: "k", lab: "constant 1 → 0 dB", val: 1, color: "graphite" },
+      { t: "p0", lab: "pole at the origin", color: "sky" },
+      { t: "z", lab: "zero at −1", w: 1, color: "amber" },
+      { t: "p", lab: "double pole at −10", w: 10, n: 2, color: "violet" } ] },
+  e: { tag: "G₅", num: [100], den: [1, 5, 104, 100], x0: -2, x1: 3, mlim: [-160, 20], plim: [-315, 45],
+    terms: [
+      { t: "k", lab: "constant 1 → 0 dB", val: 1, color: "graphite" },
+      { t: "p", lab: "pole at −1", w: 1, color: "mint" },
+      { t: "pc", lab: "complex pair, ωn = 10, ζ = 0.2", w: 10, color: "coral" } ] },
+  f: { tag: "G₆", num: [10, 20], den: [1, 20, 0, 0], x0: -2, x1: 3, mlim: [-120, 100], plim: [-225, 90],
+    terms: [
+      { t: "k", lab: "constant 1 → 0 dB", val: 1, color: "graphite" },
+      { t: "p0", lab: "double pole at the origin", n: 2, color: "sky" },
+      { t: "z", lab: "zero at −2", w: 2, color: "amber" },
+      { t: "p", lab: "pole at −20", w: 20, color: "violet" } ] },
+});
 
 /* ---------- Bode drawing ---------- */
 const XF = v => { const p = Math.round(v); return p === 0 ? "1" : p === 1 ? "10" : p === 2 ? "100" : p === -1 ? "0.1" : p === -2 ? "0.01" : p === 3 ? "1000" : "1e" + p; };
@@ -1536,7 +1719,8 @@ const minorGrid = T => {
   ctx.restore();
 };
 function drawBode(cvM, cvP, cfg) {
-  const S = cfg.sys, x0 = cfg.x0 ?? -1, x1 = cfg.x1 ?? 2, d = bodeData(S.num, S.den, x0, x1);
+  const S = cfg.sys, x0 = cfg.x0 ?? S.x0 ?? -1, x1 = cfg.x1 ?? S.x1 ?? 2, d = bodeData(S.num, S.den, x0, x1);
+  { const ref = S.terms.reduce((a, t) => a + tPh(t, x0), 0), k = Math.round((ref - d.ph[0]) / 360); if (k) d.ph = d.ph.map(v => v + 360 * k); }
   const on = cfg.terms || S.terms.map(() => true);
   const asyM = x => S.terms.reduce((a, t, i) => a + (on[i] ? tMag(t, x) : 0), 0);
   const asyP = x => S.terms.reduce((a, t, i) => a + (on[i] ? tPh(t, x) : 0), 0);
@@ -1581,6 +1765,25 @@ bodeVis("t6e2_a3", { sys: SYS.a, exact: false, parts: true, terms: [1, 1, 1, 1],
 bodeVis("t6e2_a4", { sys: SYS.a, parts: false, mlim: [-100, 20], plim: [-280, 0] });
 bodeVis("t6e2_b0", { sys: SYS.b, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: [-60, 10], plim: [-140, 20] });
 bodeVis("t6e2_b1", { sys: SYS.b, parts: false, mlim: [-60, 10], plim: [-140, 20] });
+bodeVis("t6e2_c0", { sys: SYS.c, exact: false, parts: true, terms: [1, 0, 0, 0], mlim: SYS.c.mlim, plim: SYS.c.plim });
+bodeVis("t6e2_c1", { sys: SYS.c, exact: false, parts: true, terms: [1, 1, 0, 0], mlim: SYS.c.mlim, plim: SYS.c.plim });
+bodeVis("t6e2_c2", { sys: SYS.c, exact: false, parts: true, terms: [1, 1, 1, 0], mlim: SYS.c.mlim, plim: SYS.c.plim });
+bodeVis("t6e2_c3", { sys: SYS.c, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: SYS.c.mlim, plim: SYS.c.plim });
+bodeVis("t6e2_c4", { sys: SYS.c, parts: true, mlim: SYS.c.mlim, plim: SYS.c.plim });
+bodeVis("t6e2_d0", { sys: SYS.d, exact: false, parts: true, terms: [1, 0, 0, 0], mlim: SYS.d.mlim, plim: SYS.d.plim });
+bodeVis("t6e2_d1", { sys: SYS.d, exact: false, parts: true, terms: [1, 1, 0, 0], mlim: SYS.d.mlim, plim: SYS.d.plim });
+bodeVis("t6e2_d2", { sys: SYS.d, exact: false, parts: true, terms: [1, 1, 1, 0], mlim: SYS.d.mlim, plim: SYS.d.plim });
+bodeVis("t6e2_d3", { sys: SYS.d, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: SYS.d.mlim, plim: SYS.d.plim });
+bodeVis("t6e2_d4", { sys: SYS.d, parts: true, mlim: SYS.d.mlim, plim: SYS.d.plim });
+bodeVis("t6e2_e0", { sys: SYS.e, exact: false, parts: true, terms: [1, 0, 0], mlim: SYS.e.mlim, plim: SYS.e.plim });
+bodeVis("t6e2_e1", { sys: SYS.e, exact: false, parts: true, terms: [1, 1, 0], mlim: SYS.e.mlim, plim: SYS.e.plim });
+bodeVis("t6e2_e2", { sys: SYS.e, exact: false, parts: true, terms: [1, 1, 1], mlim: SYS.e.mlim, plim: SYS.e.plim });
+bodeVis("t6e2_e3", { sys: SYS.e, parts: true, mlim: SYS.e.mlim, plim: SYS.e.plim });
+bodeVis("t6e2_f0", { sys: SYS.f, exact: false, parts: true, terms: [1, 0, 0, 0], mlim: SYS.f.mlim, plim: SYS.f.plim });
+bodeVis("t6e2_f1", { sys: SYS.f, exact: false, parts: true, terms: [1, 1, 0, 0], mlim: SYS.f.mlim, plim: SYS.f.plim });
+bodeVis("t6e2_f2", { sys: SYS.f, exact: false, parts: true, terms: [1, 1, 1, 0], mlim: SYS.f.mlim, plim: SYS.f.plim });
+bodeVis("t6e2_f3", { sys: SYS.f, exact: false, parts: true, terms: [1, 1, 1, 1], mlim: SYS.f.mlim, plim: SYS.f.plim });
+bodeVis("t6e2_f4", { sys: SYS.f, parts: true, mlim: SYS.f.mlim, plim: SYS.f.plim });
 
 /* ---------- Nyquist ---------- */
 const NSYS = {
@@ -1690,7 +1893,7 @@ function lab2() {
   let cur = "a";
   const cvm = $("#l2m"), cvp = $("#l2p"), boxes = () => $$("#l2terms input").map(b => b.checked ? 1 : 0);
   const cfg = () => ({ sys: SYS[cur], terms: boxes(), parts: $("#l2parts").checked, exact: $("#l2exact").checked, asym: $("#l2asym").checked,
-    wmark: Math.pow(10, +$("#l2w").value), mlim: cur === "a" ? [-100, 20] : [-60, 10], plim: cur === "a" ? [-280, 0] : [-140, 20] });
+    wmark: Math.pow(10, +$("#l2w").value), mlim: SYS[cur].mlim || (cur === "a" ? [-100, 20] : [-60, 10]), plim: SYS[cur].plim || (cur === "a" ? [-280, 0] : [-140, 20]) });
   const draw = () => drawBode(cvm, cvp, cfg());
   const build = () => {
     $("#l2terms").innerHTML = SYS[cur].terms.map((t, i) => `<label class="chk"><input type="checkbox" checked><span class="sw" style="background:var(--${t.color})"></span>${t.lab}</label>`).join("<br>");
@@ -1701,7 +1904,8 @@ function lab2() {
     $("#l2wv").textContent = fmt(w, 3);
     const on = boxes(), asyM = S.terms.reduce((a, t, i) => a + (on[i] ? tMag(t, Math.log10(w)) : 0), 0);
     const asyP = S.terms.reduce((a, t, i) => a + (on[i] ? tPh(t, Math.log10(w)) : 0), 0);
-    let ex = Math.atan2(G[1], G[0]) * 180 / Math.PI; if (cur === "a" && ex > 0) ex -= 360;
+    let ex = Math.atan2(G[1], G[0]) * 180 / Math.PI;
+    { const all = S.terms.reduce((a, t) => a + tPh(t, Math.log10(w)), 0); ex += 360 * Math.round((all - ex) / 360); }
     $("#l2out").innerHTML = `<table>
       <tr><td></td><td style="text-align:right">asymptote</td><td style="text-align:right">exact</td></tr>
       <tr><td>|G| at ω = ${fmt(w, 3)}</td><td style="text-align:right">${fmt(asyM, 2)} dB</td><td style="text-align:right">${fmt(dB(mag(G)), 2)} dB</td></tr>
@@ -1712,7 +1916,9 @@ function lab2() {
   livePlot(cvm, draw); livePlot(cvp, draw);
   ["l2parts", "l2exact", "l2asym"].forEach(i => $("#" + i).addEventListener("change", upd));
   $("#l2w").addEventListener("input", upd);
-  switcher("cases-l2", ["a", "b"], id => { cur = id; build(); upd(); }, { a: "G₁ = 1/[s(s+2)(s+4)]", b: "G₂ = (s+5)/[(s+2)(s+4)]" });
+  switcher("cases-l2", ["a", "b", "c", "d", "e", "f"], id => {
+    cur = id; const sl = $("#l2w"), S = SYS[id]; sl.min = S.x0 ?? -1; sl.max = S.x1 ?? 2; if (+sl.value < +sl.min || +sl.value > +sl.max) sl.value = 0;
+    build(); upd(); }, { a: "G₁ = 1/[s(s+2)(s+4)]", b: "G₂ = (s+5)/[(s+2)(s+4)]", c: "G₃ = 10s/[(s+1)(s+10)]", d: "G₄ = 100(s+1)/[s(s+10)²]", e: "G₅ = 100/[(s+1)(s²+4s+100)]", f: "G₆ = 10(s+2)/[s²(s+20)]" });
 }
 
 /* Lab 3 — Nyquist */
@@ -1758,6 +1964,8 @@ function initT6() {
   const LB = { a: "(a) 1/[s(s+2)(s+4)]", b: "(b) (s+5)/[(s+2)(s+4)]" };
   switcher("cases-e1", ["a", "b"], id => { const a = stp["cases-e1-" + id]; if (a) a.go(a.cur); }, LB);
   switcher("cases-e2", ["a", "b"], id => { const a = stp["cases-e2-" + id]; if (a) a.go(a.cur); }, LB);
+  switcher("cases-e2x", ["c", "d", "e", "f"], id => { const a = stp["cases-e2x-" + id]; if (a) a.go(a.cur); },
+    { c: "(c) 10s/[(s+1)(s+10)]", d: "(d) 100(s+1)/[s(s+10)²]", e: "(e) 100/[(s+1)(s²+4s+100)]", f: "(f) 10(s+2)/[s²(s+20)]" });
   lab1(); lab2(); lab3();
 }
 document.addEventListener("DOMContentLoaded", initT6);
