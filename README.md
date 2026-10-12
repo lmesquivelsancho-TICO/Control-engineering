@@ -12,3 +12,4 @@ Interactive HTML tutorials for the Control Engineering course (ENTEG, University
 | 4 | Root locus |
 | 5 | Steady-state error and state space |
 | 6 | Frequency response and Bode plots |
+| 7 | State space: transfer functions, poles and solutions |
